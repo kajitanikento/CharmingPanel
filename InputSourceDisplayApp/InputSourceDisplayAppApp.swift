@@ -9,9 +9,18 @@ import SwiftUI
 
 @main
 struct InputSourceDisplayAppApp: App {
+    @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
+    
     var body: some Scene {
-        WindowGroup {
-            ContentView()
+        Settings {
+            VStack(alignment: .leading, spacing: 8) {
+                Text("Input Source Indicator")
+                    .font(.headline)
+                Text("メニューバーのキーボードアイコンから表示を切り替えられます。")
+                    .font(.caption)
+            }
+            .padding()
+            .frame(width: 300)
         }
     }
 }
