@@ -36,11 +36,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         menu.addItem(NSMenuItem(title: "Quit", action: #selector(quit), keyEquivalent: "q"))
         
         statusItem.menu = menu
-        panelController.show()
+        Task {
+            await panelController.show()
+        }
     }
     
     @objc private func togglePanel() {
-        panelController.toggle()
+        Task {
+            await panelController.toggle()
+        }
     }
     
     @objc private func quit() {

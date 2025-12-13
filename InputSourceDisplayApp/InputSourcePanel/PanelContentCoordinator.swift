@@ -11,9 +11,17 @@ import Combine
 final class PanelContentCoordinator: ObservableObject {
     enum Input {
         case hide
+        case toggleMovable(to: Bool)
     }
     
     var inputTrigger: PassthroughSubject<Input, Never> = .init()
+    
+    @Published var isMoving = true
+    
+    func onToggleMovable() {
+        isMoving.toggle()
+        inputTrigger.send(.toggleMovable(to: isMoving))
+    }
     
     func onSelectHide() {
         inputTrigger.send(.hide)

@@ -28,6 +28,9 @@ struct PanelContentView: View {
                 Button("\(isStopAnimation ? "Start" : "Stop") animation") {
                     isStopAnimation.toggle()
                 }
+                Button("\(coordinator.isMoving ? "Stop" : "Start") move") {
+                    coordinator.onToggleMovable()
+                }
                 Button("Hide") {
                     coordinator.onSelectHide()
                 }
@@ -37,13 +40,28 @@ struct PanelContentView: View {
                 withAnimation(isHover ? .easeIn(duration: duration) : .easeOut(duration: duration)) {
                     hoverAnimationProgress = isHover ? 1 : 0
                 }
+                
+                if !isHover,
+                   isLongPress {
+                    isLongPress = false
+                }
             }
             .onLongPressGesture(
-                minimumDuration: 0,
+                minimumDuration: 1,
                 perform: { /** no operations */ },
                 onPressingChanged: { isPress in
-                    isLongPress = isPress
+                    if isPress {
+                        isLongPress = true
+                    }
                 }
+            )
+            .gesture(
+                WindowDragGesture()
+                    .onEnded { _ in
+                        if isLongPress {
+                            isLongPress = false
+                        }
+                    }
             )
     }
     
@@ -52,7 +70,7 @@ struct PanelContentView: View {
             inputSourceLabel
             cat
         }
-        .shadow(radius: 6)
+        .shadow(color: .black.opacity(0.2),radius: 4, x: 2, y: 2)
         .opacity(opacity)
     }
     

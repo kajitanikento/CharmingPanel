@@ -9,11 +9,16 @@ import AppKit
 import SwiftUI
 import Combine
 
+@MainActor
 final class InputSourcePanelController {
     private let panel: NSPanel
     private let manager: InputSourceObserver
     private let panelContentCoordinator = PanelContentCoordinator()
     private let hostingView: NSHostingView<PanelContentView>
+    
+    private var lastMouseLocation: (CGPoint, Date)?
+    private var shouldMovePanel: Bool = true
+    
     private var cancellables = Set<AnyCancellable>()
     
     init(inputSourceObserver: InputSourceObserver) {
@@ -60,6 +65,7 @@ final class InputSourcePanelController {
 
         resizePanel()
         bind()
+        observe()
     }
     
     private func bind() {
@@ -79,16 +85,67 @@ final class InputSourcePanelController {
             .store(in: &cancellables)
     }
     
+    private func observe() {
+        observeMouseLocation()
+    }
+    
+    private var timer: Timer?
+    
+    private func observeMouseLocation() {
+        timer = .scheduledTimer(withTimeInterval: 1, repeats: true) { [weak self] _ in
+            guard let self else { return }
+            Task { @MainActor in
+                self.handleMouseLocationTimer()
+            }
+        }
+    }
+    
+    private func handleMouseLocationTimer() {
+        guard shouldMovePanel else { return }
+        
+        let currentMouseLocation = NSEvent.mouseLocation
+        
+        guard let beforeMouseLocation = lastMouseLocation else {
+            self.lastMouseLocation = (currentMouseLocation, .now)
+            return
+        }
+        if beforeMouseLocation.0 != currentMouseLocation {
+            self.lastMouseLocation = (currentMouseLocation, .now)
+            return
+        }
+        // マウスポインタが一定時間同じ場所で止まっていたら寄っていく
+        if Date().timeIntervalSince(beforeMouseLocation.1) > 30 {
+            movePanel(to: currentMouseLocation)
+            self.lastMouseLocation = (currentMouseLocation, .now)
+        }
+    }
+    
+    private func movePanel(to location: CGPoint) {
+        let newLocation = CGPoint(
+            x: location.x - PanelContentView.size.width - 40,
+            y: location.y - PanelContentView.size.height / 2
+        )
+        let newFrame = CGRect(origin: newLocation, size: PanelContentView.size)
+        
+        NSAnimationContext.runAnimationGroup { context in
+            context.duration = 2
+            context.timingFunction = CAMediaTimingFunction(name: .linear)
+            
+            self.panel.animator().setFrame(newFrame, display: true)
+        }
+    }
+    
     private func handlePanelInput(_ input: PanelContentCoordinator.Input) {
         switch input {
         case .hide:
             hide()
+        case let .toggleMovable(isMoving):
+            shouldMovePanel = isMoving
         }
     }
 
     private func resizePanel() {
         let newFrame = NSRect(origin: panel.frame.origin, size: PanelContentView.size)
-        panel.contentView?.layer?.cornerRadius = PanelContentView.size.width / 2
 
         panel.setFrame(newFrame, display: true)
     }
