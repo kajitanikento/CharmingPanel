@@ -6,14 +6,14 @@
 //
 
 import SwiftUI
+import ComposableArchitecture
 
 struct PanelContentView: View {
     static let size = CGSize(width: 120, height: 170)
     
-    @ObservedObject var coordinator: PanelContentCoordinator
-    @ObservedObject var inputSourceObserver: InputSourceObserver
+    @Bindable var store: StoreOf<ActorPanel>
     
-    @State var isStopAnimation = false
+    @ObservedObject var inputSourceObserver: InputSourceObserver
     
     @State var isLongPress = false
     @State var hoverAnimationProgress: Double = 0
@@ -25,14 +25,14 @@ struct PanelContentView: View {
     var body: some View {
         content
             .contextMenu {
-                Button("\(isStopAnimation ? "Start" : "Stop") animation") {
-                    isStopAnimation.toggle()
+                Button("\(store.withAnimation ? "Stop" : "Start") animation") {
+                    store.send(.toggleWithAnimation)
                 }
-                Button("\(coordinator.isMoving ? "Stop" : "Start") move") {
-                    coordinator.onToggleMovable()
+                Button("\(store.withMove ? "Stop" : "Start") move") {
+                    store.send(.toggleWithMove)
                 }
                 Button("Hide") {
-                    coordinator.onSelectHide()
+                    store.send(.toggleHidden(to: true))
                 }
             }
             .onHover { isHover in
@@ -63,6 +63,9 @@ struct PanelContentView: View {
                         }
                     }
             )
+            .onAppear {
+                store.send(.onAppear)
+            }
     }
     
     private var content: some View {
@@ -80,7 +83,7 @@ struct PanelContentView: View {
         CatFrameForwardView(
             type: isLongPress ? .pickUp : .onBall,
             size: .init(width: Self.size.width - 20, height: Self.size.height - 20),
-            isStopAnimation: $isStopAnimation
+            withAnimation: store.withAnimation
         )
     }
     
@@ -146,7 +149,7 @@ struct PanelContentView: View {
 
 #Preview {
     PanelContentView(
-        coordinator: .init(),
+        store: .init(initialState: .init()) { ActorPanel() },
         inputSourceObserver: .init()
     )
 }

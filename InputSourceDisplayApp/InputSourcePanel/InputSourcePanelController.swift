@@ -16,12 +16,10 @@ final class InputSourcePanelController {
     
     private let panel = NSPanel()
     private let inputSourceObserver: InputSourceObserver
-    private let panelContentCoordinator = PanelContentCoordinator()
     
     private var hostingView: NSHostingView<PanelContentView>!
     
     private var lastMouseLocation: (CGPoint, Date)?
-    private var shouldMovePanel: Bool = true
     
     private var observeMouseLocationTimer: Timer?
     
@@ -54,7 +52,7 @@ final class InputSourcePanelController {
         panel.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
 
         hostingView = NSHostingView(rootView: PanelContentView(
-            coordinator: panelContentCoordinator,
+            store: store,
             inputSourceObserver: inputSourceObserver
         ))
         hostingView.translatesAutoresizingMaskIntoConstraints = false
@@ -76,7 +74,6 @@ final class InputSourcePanelController {
     private func bind() {
         observeStore()
         observeInputSource()
-        observePanelContent()
         observeMouseLocation()
     }
     
@@ -100,15 +97,6 @@ final class InputSourcePanelController {
             .store(in: &cancellables)
     }
     
-    private func observePanelContent() {
-        panelContentCoordinator
-            .inputTrigger
-            .sink { [weak self] input in
-                self?.handlePanelInput(input)
-            }
-            .store(in: &cancellables)
-    }
-        
     private func observeMouseLocation() {
         observeMouseLocationTimer = .scheduledTimer(withTimeInterval: 1, repeats: true) { [weak self] _ in
             guard let self else { return }
@@ -119,7 +107,7 @@ final class InputSourcePanelController {
     }
     
     private func handleMouseLocationTimer() {
-        guard shouldMovePanel else { return }
+        guard store.state.withMove else { return }
         
         let currentMouseLocation = NSEvent.mouseLocation
         
@@ -152,28 +140,11 @@ final class InputSourcePanelController {
             self.panel.animator().setFrame(newFrame, display: true)
         }
     }
-    
-    private func handlePanelInput(_ input: PanelContentCoordinator.Input) {
-        switch input {
-        case .hide:
-            hide()
-        case let .toggleMovable(isMoving):
-            shouldMovePanel = isMoving
-        }
-    }
 
     private func resizePanel() {
         let newFrame = NSRect(origin: panel.frame.origin, size: PanelContentView.size)
 
         panel.setFrame(newFrame, display: true)
-    }
-    
-    private func toggle() {
-        if panel.isVisible {
-            hide()
-        } else {
-            show()
-        }
     }
     
     private func show() {
