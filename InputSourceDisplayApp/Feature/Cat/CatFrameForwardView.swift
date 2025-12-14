@@ -10,7 +10,7 @@ import SwiftUI
 struct CatFrameForwardView: View {
     var type: CatType
     var size: CGSize
-    @Binding var isStopAnimation: Bool
+    var withAnimation: Bool
     
     @State var frameIndex = 0
     @State var animationTask: Task<Void, Never>?
@@ -22,17 +22,17 @@ struct CatFrameForwardView: View {
             .frame(width: size.width)
             .onAppear(perform: startAnimation)
             .onDisappear(perform: stopAnimation)
-            .onChange(of: isStopAnimation) {
-                if isStopAnimation {
-                    stopAnimation()
-                } else {
+            .onChange(of: withAnimation) {
+                if withAnimation {
                     startAnimation()
+                } else {
+                    stopAnimation()
                 }
             }
     }
     
     func startAnimation() {
-        guard !isStopAnimation else { return }
+        guard withAnimation else { return }
         
         animationTask?.cancel()
         animationTask = Task {

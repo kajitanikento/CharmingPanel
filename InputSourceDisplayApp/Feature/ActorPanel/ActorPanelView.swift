@@ -1,38 +1,32 @@
 //
-//  PanelContentView.swift
+//  ActorPanelView.swift
 //  InputSourceDisplayApp
 //
 //  Created by kajitani kento on 2025/12/06.
 //
 
 import SwiftUI
+import ComposableArchitecture
 
-struct PanelContentView: View {
+struct ActorPanelView: View {
     static let size = CGSize(width: 120, height: 170)
     
-    @ObservedObject var coordinator: PanelContentCoordinator
-    @ObservedObject var inputSourceObserver: InputSourceObserver
-    
-    @State var isStopAnimation = false
+    @Bindable var store: StoreOf<ActorPanel>
     
     @State var isLongPress = false
     @State var hoverAnimationProgress: Double = 0
     
-    var currentInputSource: InputSource {
-        .of(inputSourceObserver.currentName)
-    }
-    
     var body: some View {
         content
             .contextMenu {
-                Button("\(isStopAnimation ? "Start" : "Stop") animation") {
-                    isStopAnimation.toggle()
+                Button("\(store.withAnimation ? "Stop" : "Start") animation") {
+                    store.send(.toggleWithAnimation)
                 }
-                Button("\(coordinator.isMoving ? "Stop" : "Start") move") {
-                    coordinator.onToggleMovable()
+                Button("\(store.withMove ? "Stop" : "Start") move") {
+                    store.send(.toggleWithMove)
                 }
                 Button("Hide") {
-                    coordinator.onSelectHide()
+                    store.send(.toggleHidden(to: true))
                 }
             }
             .onHover { isHover in
@@ -63,6 +57,12 @@ struct PanelContentView: View {
                         }
                     }
             )
+            .onAppear {
+                store.send(.onAppear)
+            }
+            .onDisappear {
+                store.send(.onDisappear)
+            }
     }
     
     private var content: some View {
@@ -80,7 +80,7 @@ struct PanelContentView: View {
         CatFrameForwardView(
             type: isLongPress ? .pickUp : .onBall,
             size: .init(width: Self.size.width - 20, height: Self.size.height - 20),
-            isStopAnimation: $isStopAnimation
+            withAnimation: store.withAnimation
         )
     }
     
@@ -123,21 +123,21 @@ struct PanelContentView: View {
     }
     
     private var shortLabel: String {
-        switch currentInputSource {
+        switch store.currentInputSource {
         case .abc: "A"
         case .hiragana: "あ"
         }
     }
     
     private var textColor: Color {
-        switch currentInputSource {
+        switch store.currentInputSource {
         case .abc: .white
         case .hiragana: .white
         }
     }
     
     private var backgroundColor: Color {
-        switch currentInputSource {
+        switch store.currentInputSource {
         case .abc: .blue
         case .hiragana: .red
         }
@@ -145,9 +145,8 @@ struct PanelContentView: View {
 }
 
 #Preview {
-    PanelContentView(
-        coordinator: .init(),
-        inputSourceObserver: .init()
+    ActorPanelView(
+        store: .init(initialState: .init()) { ActorPanel() }
     )
 }
 

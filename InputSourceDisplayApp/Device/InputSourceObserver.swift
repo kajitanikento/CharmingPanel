@@ -8,38 +8,51 @@
 import SwiftUI
 import AppKit
 import Carbon
-import Combine
+import ComposableArchitecture
 
-final class InputSourceObserver: ObservableObject {
-    @Published var currentName: String = "Unknown"
-    
+final class InputSourceObserver {
     private var observer: (any NSObjectProtocol)?
+    private var continuation: AsyncStream<InputSource>.Continuation?
+
+    init() {}
     
-    init() {
-        updateCurrentName()
+    var stream: AsyncStream<InputSource> {
         startObserving()
+        return AsyncStream { continuation in
+            self.continuation = continuation
+            continuation.yield(getCurrent())
+        }
     }
     
-    deinit {
+    func stop() {
         if let observer {
             DistributedNotificationCenter.default().removeObserver(observer)
         }
+        continuation?.finish()
+        continuation = nil
     }
     
-    private func updateCurrentName() {
+    private func getCurrent() -> InputSource {
+        InputSource.of(getCurrentInputSourceName())
+    }
+
+    private func getCurrentInputSourceName() -> String {
         guard let source = TISCopyCurrentKeyboardInputSource()?.takeUnretainedValue() else {
-            currentName = "Unknown"
-            return
+            return "Unknown"
         }
-        
+
         if let namePtr = TISGetInputSourceProperty(source, kTISPropertyLocalizedName) {
             let cfStr = unsafeBitCast(namePtr, to: CFString.self)
-            currentName = cfStr as String
-        } else {
-            currentName = "Unknown"
+            return cfStr as String
         }
+        
+        return "Unknown"
     }
-    
+
+    private func updateCurrent() {
+        continuation?.yield(getCurrent())
+    }
+
     private func startObserving() {
         let notificationName = Notification.Name("com.apple.Carbon.TISNotifySelectedKeyboardInputSourceChanged")
         observer = DistributedNotificationCenter.default().addObserver(
@@ -47,7 +60,7 @@ final class InputSourceObserver: ObservableObject {
             object: nil,
             queue: .main
         ) { [weak self] _ in
-            self?.updateCurrentName()
+            self?.updateCurrent()
         }
     }
 }
@@ -57,10 +70,25 @@ enum InputSource {
     case hiragana
 
     static func of(_ name: String) -> Self {
-        // TODO: 仮実装
+        // TODO: サポート外の言語の考慮を追加する
         if name.lowercased().contains("us") || name.contains("英数") || name.lowercased().contains("abc") {
             return .abc
         }
         return .hiragana
     }
+}
+
+// MARK: define swift dependency
+
+extension DependencyValues {
+    var inputSource: InputSourceObserver {
+        get { self[InputSourceKey.self] }
+        set { self[InputSourceKey.self] = newValue }
+    }
+}
+
+private enum InputSourceKey: DependencyKey {
+    
+    static let liveValue: InputSourceObserver = .init()
+    
 }
