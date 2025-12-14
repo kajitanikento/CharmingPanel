@@ -16,14 +16,18 @@ struct ActorPanel {
     }
     
     enum Action {
-        case toggleHidden(to: Bool)
+        case toggleHidden(to: Bool? = nil)
     }
     
     var body: some Reducer<State, Action> {
         Reduce { state, action in
             switch action {
             case let .toggleHidden(isHide):
-                state.isHide = isHide
+                if let isHide {
+                    state.isHide = isHide
+                } else {
+                    state.isHide.toggle()
+                }
                 return .none
             }
         }

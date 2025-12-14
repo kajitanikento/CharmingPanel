@@ -9,7 +9,12 @@ import AppKit
 import ComposableArchitecture
 
 final class AppDelegate: NSObject, NSApplicationDelegate {
-    let store = Store(initialState: ActorPanel.State()) { ActorPanel() }
+    let store = Store(initialState: ActorPanel.State()) {
+        ActorPanel()
+        #if DEBUG
+            ._printChanges()
+        #endif
+    }
     
     private var statusItem: NSStatusItem!
     private let inputSourceObserver = InputSourceObserver()
@@ -42,15 +47,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         menu.addItem(NSMenuItem(title: "Quit", action: #selector(quit), keyEquivalent: "q"))
         
         statusItem.menu = menu
-        Task {
-            await panelController.show()
-        }
     }
     
     @objc private func togglePanel() {
-        Task {
-            await panelController.toggle()
-        }
+        store.send(.toggleHidden())
     }
     
     @objc private func quit() {
