@@ -19,7 +19,7 @@ struct ActorPanelView: View {
     var body: some View {
         content
             .contextMenu {
-                Button("\(store.withAnimation ? "Stop" : "Start") animation") {
+                Button("\(store.state.cat.withAnimation ? "Stop" : "Start") animation") {
                     store.send(.toggleWithAnimation)
                 }
                 Button("\(store.withMove ? "Stop" : "Start") move") {
@@ -63,6 +63,13 @@ struct ActorPanelView: View {
             .onDisappear {
                 store.send(.onDisappear)
             }
+            .onChange(of: isLongPress) {
+                if isLongPress {
+                    store.send(.cat(.changeType(.pickUp)))
+                } else {
+                    store.send(.cat(.changeType(.onBall)))
+                }
+            }
     }
     
     private var content: some View {
@@ -78,9 +85,7 @@ struct ActorPanelView: View {
     
     private var cat: some View {
         CatFrameForwardView(
-            type: isLongPress ? .pickUp : .onBall,
-            size: .init(width: Self.size.width - 20, height: Self.size.height - 20),
-            withAnimation: store.withAnimation
+            store: store.scope(state: \.cat, action: \.cat)
         )
     }
     
@@ -103,10 +108,6 @@ struct ActorPanelView: View {
             Text(shortLabel)
                 .font(.system(size: 20, weight: .bold, design: .rounded))
                 .foregroundStyle(textColor)
-//            Text(inputSourceObserver.currentName)
-//                .font(.system(size: 11, weight: .medium))
-//                .foregroundStyle(textColor.opacity(0.6))
-//                .lineLimit(1)
         }
         .frame(width: 44, height: 44)
         .background(backgroundColor)

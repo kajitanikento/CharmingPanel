@@ -18,8 +18,9 @@ struct ActorPanel {
         var lastMouseLocation: (CGPoint, Date)?
         
         var isHide: Bool = false
-        var withAnimation: Bool = true
         var withMove: Bool = true
+        
+        var cat: Cat.State = .init()
     }
     
     enum Action {
@@ -41,6 +42,9 @@ struct ActorPanel {
         
         // Dependency inputs
         case changeInputSource(InputSource)
+        
+        // Child reducer
+        case cat(Cat.Action)
     }
     
     @Dependency(\.inputSource) var inputSource
@@ -111,8 +115,7 @@ struct ActorPanel {
                 return .none
             
             case .toggleWithAnimation:
-                state.withAnimation.toggle()
-                return .none
+                return .send(.cat(.toggleWithAnimation))
                 
             case .toggleWithMove:
                 state.withMove.toggle()
@@ -121,7 +124,14 @@ struct ActorPanel {
             case let .changeInputSource(source):
                 state.currentInputSource = source
                 return .none
+                
+            case .cat:
+                return .none
             }
+        }
+        
+        Scope(state: \.cat, action: \.cat) {
+            Cat()
         }
     }
 }
