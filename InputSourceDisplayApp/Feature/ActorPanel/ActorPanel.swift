@@ -14,11 +14,11 @@ struct ActorPanel {
     @ObservableState
     struct State {
         var currentInputSource: InputSource = .abc
-        var movingPanelPosition: CGPoint = .zero
+        var movingPanelPosition: MovePanelInfo = .zero
         var lastMouseLocation: (CGPoint, Date)?
         
         var isHide: Bool = false
-        var withMove: Bool = true
+        var withMove: Bool = false
         
         var pomodoroTimer: PomodoroTimer.State = .init()
         var cat: Cat.State = .init()
@@ -34,7 +34,7 @@ struct ActorPanel {
         case startObserveMouseLocation
         case mouseLocationTimerTicked
         case updateLastMouseLocation(CGPoint, Date)
-        case updateMovingPanelPosition(CGPoint)
+        case updateMovingPanelPosition(MovePanelInfo)
         
         // View inputs
         case toggleHidden(to: Bool? = nil)
@@ -47,6 +47,10 @@ struct ActorPanel {
         // Child reducer
         case pomodoroTimer(PomodoroTimer.Action)
         case cat(Cat.Action)
+    }
+    
+    enum CancelID: String {
+        case moveCatOnCompleteTimer
     }
     
     @Dependency(\.inputSource) var inputSource
@@ -87,8 +91,8 @@ struct ActorPanel {
                 state.lastMouseLocation = (location, date)
                 return .none
                 
-            case let .updateMovingPanelPosition(position):
-                state.movingPanelPosition = position
+            case let .updateMovingPanelPosition(info):
+                state.movingPanelPosition = info
                 return .none
                 
             case let .toggleHidden(isHide):
@@ -113,8 +117,25 @@ struct ActorPanel {
             case let .pomodoroTimer(action):
                 switch action {
                 case .completeTimer:
-                    // TODO: 動き回る
-                    break
+                    return .run { send in
+                        let limitDate = self.date.now.addingTimeInterval(30)
+                        for await _ in await self.clock.timer(interval: .seconds(0.1)) {
+                            if self.date.now >= limitDate {
+                                await send(.pomodoroTimer(.stopTimer))
+                                return
+                            }
+                            let mouseLocation = NSEvent.mouseLocation
+                            let position = CGPoint(
+                                x: mouseLocation.x + 40 + ActorPanelView.size.width / 2,
+                                y: mouseLocation.y
+                            )
+                            await send(.updateMovingPanelPosition(.init(position: position, animationDuration: 0.5)))
+                        }
+                    }
+                    .cancellable(id: CancelID.moveCatOnCompleteTimer)
+                case .stopTimer:
+                    return .cancel(id: CancelID.moveCatOnCompleteTimer)
+                    
                 default:
                     break
                 }
@@ -149,10 +170,19 @@ struct ActorPanel {
         // マウスポインタが一定時間同じ場所で止まっていたら寄っていく
         if date.now.timeIntervalSince(beforeMouseLocation.1) > 30 {
             return .run { send in
-                await send(.updateMovingPanelPosition(currentMouseLocation))
+                await send(.updateMovingPanelPosition(.init(position: currentMouseLocation)))
                 await send(.updateLastMouseLocation(currentMouseLocation, date.now))
             }
         }
         return .none
+    }
+}
+
+extension ActorPanel {
+    struct MovePanelInfo {
+        var position: CGPoint
+        var animationDuration: Double = 2
+        
+        static let zero: Self = .init(position: .zero, animationDuration: .zero)
     }
 }

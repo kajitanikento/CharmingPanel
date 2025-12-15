@@ -81,15 +81,18 @@ final class ActorPanelController {
     private func observeMouseLocation() {
         observations.append(observe { [weak self] in
             guard let self,
-                  store.movingPanelPosition != .zero
+                  store.movingPanelPosition.position != .zero
             else { return }
-            movePanel(to: store.movingPanelPosition)
+            movePanel(to: store.movingPanelPosition.position, duration: store.movingPanelPosition.animationDuration)
         })
     }
     
     
     
-    private func movePanel(to location: CGPoint) {
+    private func movePanel(
+        to location: CGPoint,
+        duration: Double
+    ) {
         let newLocation = CGPoint(
             x: location.x - ActorPanelView.size.width - 40,
             y: location.y - ActorPanelView.size.height / 2
@@ -97,7 +100,7 @@ final class ActorPanelController {
         let newFrame = CGRect(origin: newLocation, size: ActorPanelView.size)
         
         NSAnimationContext.runAnimationGroup { context in
-            context.duration = 2
+            context.duration = duration
             context.timingFunction = CAMediaTimingFunction(name: .linear)
             
             self.panel.animator().setFrame(newFrame, display: true)
