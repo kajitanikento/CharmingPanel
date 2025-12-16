@@ -24,7 +24,7 @@ final class ActorPanelController {
     ) {
         self.store = store
         setup()
-        bind()
+        observeStore()
     }
     
     private func setup() {
@@ -61,11 +61,6 @@ final class ActorPanelController {
         updatePanelSize()
     }
     
-    private func bind() {
-        observeStore()
-        observeMouseLocation()
-    }
-    
     private func observeStore() {
         observations.append(observe { [weak self] in
             guard let self else { return }
@@ -81,9 +76,7 @@ final class ActorPanelController {
             _ = store.panelSize
             updatePanelSize()
         })
-    }
-    
-    private func observeMouseLocation() {
+        
         observations.append(observe { [weak self] in
             guard let self,
                   store.movingPanelPosition.position != .zero
