@@ -125,6 +125,7 @@ struct ActorPanel {
                     return .run { send in
                         let limitDate = self.date.now.addingTimeInterval(30)
                         for await _ in await self.clock.timer(interval: .seconds(0.1)) {
+                            guard !Task.isCancelled else { return }
                             if self.date.now >= limitDate {
                                 await send(.pomodoroTimer(.stopTimer))
                                 return
