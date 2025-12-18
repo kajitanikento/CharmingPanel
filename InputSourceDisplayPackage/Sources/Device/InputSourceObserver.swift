@@ -20,7 +20,10 @@ actor InputSourceObserver {
         startObserving()
         return AsyncStream { continuation in
             self.continuation = continuation
-            continuation.yield(getCurrent())
+            
+            Task {
+                await updateCurrent()
+            }
         }
     }
     
@@ -32,10 +35,11 @@ actor InputSourceObserver {
         continuation = nil
     }
     
-    private func getCurrent() -> InputSource {
-        InputSource.of(getCurrentInputSourceName())
+    private func getCurrent() async -> InputSource {
+        InputSource.of(await getCurrentInputSourceName())
     }
 
+    @MainActor
     private func getCurrentInputSourceName() -> String {
         guard let source = TISCopyCurrentKeyboardInputSource()?.takeUnretainedValue() else {
             return "Unknown"
@@ -49,8 +53,8 @@ actor InputSourceObserver {
         return "Unknown"
     }
 
-    private func updateCurrent() {
-        continuation?.yield(getCurrent())
+    private func updateCurrent() async {
+        continuation?.yield(await getCurrent())
     }
 
     private func startObserving() {
