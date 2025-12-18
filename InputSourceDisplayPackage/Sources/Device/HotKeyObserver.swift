@@ -41,12 +41,10 @@ final actor HotKeyObserver: Sendable {
         let keyCode: UInt32 = UInt32(kVK_ANSI_K)
         let modifiers: UInt32 = UInt32(cmdKey)
         
-        // 任意の識別子（イベントで見分ける）
         var hotKeyID = EventHotKeyID(
             signature: OSType(UInt32(truncatingIfNeeded: HotKeyID.callCat.fourCC)),
             id: 1
         )
-        
         let status = RegisterEventHotKey(
             keyCode,
             modifiers,
@@ -60,12 +58,10 @@ final actor HotKeyObserver: Sendable {
             return
         }
         
-        // ホットキーイベントを受け取るハンドラをインストール
         var eventType = EventTypeSpec(
             eventClass: OSType(kEventClassKeyboard),
             eventKind: UInt32(kEventHotKeyPressed)
         )
-        
         InstallEventHandler(
             GetApplicationEventTarget(),
             {  _, eventRef, _ in
