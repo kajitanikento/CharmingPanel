@@ -28,6 +28,9 @@ let package = Package(
             name: "InputSourceDisplayPackage",
             dependencies: [
                 .product(name: "ComposableArchitecture", package: "swift-composable-architecture")
+            ],
+            swiftSettings: [
+                .swiftLanguageMode(.v6)
             ]
         ),
     ]

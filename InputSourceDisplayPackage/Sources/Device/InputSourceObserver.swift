@@ -10,7 +10,7 @@ import AppKit
 import Carbon
 import ComposableArchitecture
 
-actor InputSourceObserver: Sendable {
+actor InputSourceObserver {
     private var observer: (any NSObjectProtocol)?
     private var continuation: AsyncStream<InputSource>.Continuation?
 
