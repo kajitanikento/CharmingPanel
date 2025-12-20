@@ -9,14 +9,7 @@ import SwiftUI
 import ComposableArchitecture
 
 struct ActorPanelView: View {
-    static func size(withTimer: Bool) -> CGSize {
-        if withTimer {
-            let height = Self.size.height + PomodoroTimerView.size.height + 20
-            return .init(width: 120, height: height)
-        }
-        return Self.size
-    }
-    private static let size = CGSize(width: 120, height: 170)
+    static let size = CGSize(width: 120, height: 170)
     
     @Bindable var store: StoreOf<ActorPanel>
     
@@ -98,23 +91,22 @@ struct ActorPanelView: View {
             .onChange(of: isLongPress) {
                 if isLongPress {
                     store.send(.cat(.changeType(.pickUp)))
-                } else {
-                    store.send(.cat(.changeType(.onBall)))
+                    return
                 }
+                if store.pomodoroTimer.isTimerRunning {
+                    store.send(.cat(.changeType(.hasTimer)))
+                    return
+                }
+                store.send(.cat(.changeType(.onBall)))
             }
     }
     
     private var content: some View {
-        VStack(spacing: 0) {
+        ZStack {
+            inputSourceLabel
+            cat
             pomodoroTimer
-            
-            ZStack {
-                inputSourceLabel
-                cat
-            }
         }
-        .shadow(color: .black.opacity(0.2),radius: 4, x: 2, y: 2)
-        .opacity(opacity)
     }
     
     // MARK: Subviews
@@ -123,6 +115,7 @@ struct ActorPanelView: View {
         PomodoroTimerView(
             store: store.scope(state: \.pomodoroTimer, action: \.pomodoroTimer)
         )
+        .offset(y: -22)
         .opacity(isLongPress ? 0 : 1)
     }
     
@@ -131,6 +124,7 @@ struct ActorPanelView: View {
             store: store.scope(state: \.cat, action: \.cat)
         )
         .frame(width: Self.size.width - 12, height: Self.size.height - 12)
+        .shadow(color: .black.opacity(0.2),radius: 4, x: 2, y: 2)
     }
     
     @ViewBuilder
@@ -143,6 +137,7 @@ struct ActorPanelView: View {
                 .padding(.trailing, 4)
         }
         .frame(height: Self.size.height)
+        .shadow(color: .black.opacity(0.2),radius: 4, x: 2, y: 2)
         .opacity(isLongPress ? 0 : 1)
     }
     
