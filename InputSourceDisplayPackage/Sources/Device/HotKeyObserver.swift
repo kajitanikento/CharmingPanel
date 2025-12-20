@@ -32,8 +32,8 @@ final actor HotKeyObserver: Sendable {
         continuation = nil
     }
     
-    private func onHotKeyPressed(id: UInt32) {
-        guard let hotKey = HotKey(rawValue: id) else {
+    private func onHotKeyPressed(eventId: UInt32) {
+        guard let hotKey = HotKey.of(eventId: eventId) else {
             return
         }
         continuation?.yield(hotKey)
@@ -60,7 +60,7 @@ final actor HotKeyObserver: Sendable {
         
         var hotKeyID = EventHotKeyID(
             signature: OSType(UInt32(truncatingIfNeeded: hotKey.fourCC)),
-            id: hotKey.rawValue
+            id: hotKey.eventId
         )
         var hotKeyRef = hotKeyRefs[hotKey]
         let status = RegisterEventHotKey(
@@ -96,7 +96,7 @@ final actor HotKeyObserver: Sendable {
                     &hkID
                 )
                 
-                HotKeyObserver.shared.onHotKeyPressed(id: hkID.id)
+                HotKeyObserver.shared.onHotKeyPressed(eventId: hkID.id)
                 return noErr
             },
             1,
@@ -107,21 +107,31 @@ final actor HotKeyObserver: Sendable {
     }
 }
 
-enum HotKey: UInt32 {
-    case callCat = 1
-    case toggleHidden = 2
+enum HotKey: String, CaseIterable {
+    // rawValueはfourCCの形式
+    case callCat = "CALL"
+    case toggleHidden = "TOHI"
     
-    private var stringValue: String {
+    var eventId: UInt32 {
         switch self {
-        case .callCat: "CallCat"
-        case .toggleHidden: "ToggleHidden"
+        case .callCat: 1
+        case .toggleHidden: 2
         }
     }
     
     var fourCC: UInt32 {
         var result: UInt32 = 0
-        for u in self.stringValue.utf8.prefix(4) { result = (result << 8) + UInt32(u) }
+        for u in self.rawValue.utf8.prefix(4) { result = (result << 8) + UInt32(u) }
         return result
+    }
+    
+    static func of(eventId: UInt32) -> Self? {
+        for type in Self.allCases {
+            if type.eventId == eventId {
+                return type
+            }
+        }
+        return nil
     }
 }
 
