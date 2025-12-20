@@ -24,7 +24,7 @@ struct ActorPanel {
         var cat: Cat.State = .init()
         
         var panelSize: CGSize {
-            ActorPanelView.size(withTimer: pomodoroTimer.isShow)
+            ActorPanelView.size
         }
     }
     
@@ -42,6 +42,7 @@ struct ActorPanel {
         case startMovePanelPosition(MovePanelInfo)
         case finishMovePanelPosition
         case onPressHotKey(HotKey)
+        case onStopTimer
         
         // View inputs
         case toggleHidden(to: Bool? = nil)
@@ -122,6 +123,9 @@ struct ActorPanel {
                 
                 return .none
                 
+            case .onStopTimer:
+                return .cancel(id: CancelID.moveCatOnCompleteTimer)
+                
             case let .startMovePanelPosition(info):
                 state.movingPanelPosition = info
                 return .none
@@ -151,9 +155,14 @@ struct ActorPanel {
                 
             case let .pomodoroTimer(action):
                 switch action {
+                case .startTimer:
+                    return .send(.cat(.changeType(.hasTimer)))
+                    
                 case .completeTimer:
                     let panelSize = state.panelSize
                     return .run { send in
+                        await send(.cat(.changeAnimationInterval(0.07)))
+                        
                         let limitDate = await self.date.now.addingTimeInterval(30)
                         for await _ in await self.clock.timer(interval: .seconds(0.1)) {
                             guard !Task.isCancelled else { return }
@@ -166,12 +175,16 @@ struct ActorPanel {
                                 x: mouseLocation.x + 40 + panelSize.width / 2,
                                 y: mouseLocation.y
                             )
-                            await send(.startMovePanelPosition(.init(position: position, animationDuration: 0.5)))
+                            await send(.startMovePanelPosition(.init(position: position, animationDuration: 0.3)))
                         }
                     }
                     .cancellable(id: CancelID.moveCatOnCompleteTimer)
                 case .stopTimer:
-                    return .cancel(id: CancelID.moveCatOnCompleteTimer)
+                    return .run { send in
+                        await send(.cat(.changeType(.onBall)))
+                        await send(.cat(.changeAnimationInterval(0.15)))
+                        await send(.onStopTimer)
+                    }
                     
                 default:
                     break

@@ -10,6 +10,7 @@ import SwiftUI
 
 enum CatType {
     case onBall
+    case hasTimer
     case pickUp
 }
 
@@ -40,7 +41,7 @@ struct CatFrameForwardView: View {
         animationTask?.cancel()
         animationTask = Task {
             while !Task.isCancelled {
-                try? await Task.sleep(for: .milliseconds(150))
+                try? await Task.sleep(for: .seconds(store.animationInterval))
                 guard !Task.isCancelled else { return }
                 if frameIndex == store.type.frames.count - 1 {
                     frameIndex = 0
@@ -61,6 +62,8 @@ extension CatType {
         switch self {
         case .onBall:
             makeFrames(name: "CatOnBallClear", count: 2)
+        case .hasTimer:
+            makeFrames(name: "CatHasTimer", count: 2)
         case .pickUp:
             makeFrames(name: "CatPickUp", count: 2)
         }

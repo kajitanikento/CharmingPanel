@@ -16,11 +16,11 @@ struct PomodoroTimerView: View {
     var body: some View {
         if let timerText {
             timerText
-                .font(.system(size: 20, weight: .bold))
-                .frame(width: Self.size.width, height: Self.size.height)
+                .font(.system(size: 18, weight: .bold))
                 .foregroundStyle(.white)
-                .background(backgroundColor)
-                .clipShape(RoundedRectangle(cornerRadius: 40))
+//                .frame(width: Self.size.width, height: Self.size.height)
+//                .background(backgroundColor)
+//                .clipShape(RoundedRectangle(cornerRadius: 40))
         }
     }
     
