@@ -11,7 +11,8 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		CFE9459F2EF6735C0076377F /* CharmingPanel.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; name = CharmingPanel.app; path = "/Users/kajitanikento/project/ios/CharmingPanel/build/Debug-iphoneos/CharmingPanel.app"; sourceTree = "<absolute>"; };
+		CFD01AE02EF79E18006BD73D /* CharmingPanel.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CharmingPanel.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		CFD01AE32EF79E37006BD73D /* CharmingPanelPackage */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = CharmingPanelPackage; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -37,7 +38,9 @@
 		CF96F54C2EDA9CBF00248496 = {
 			isa = PBXGroup;
 			children = (
+				CFD01AE32EF79E37006BD73D /* CharmingPanelPackage */,
 				CF96F5572EDA9CBF00248496 /* CharmingPanel */,
+				CFD01AE02EF79E18006BD73D /* CharmingPanel.app */,
 			);
 			sourceTree = "<group>";
 		};
@@ -64,7 +67,7 @@
 				CFE945A32EF673740076377F /* Core */,
 			);
 			productName = CharmingPanel;
-			productReference = CFE9459F2EF6735C0076377F /* CharmingPanel.app */;
+			productReference = CFD01AE02EF79E18006BD73D /* CharmingPanel.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
