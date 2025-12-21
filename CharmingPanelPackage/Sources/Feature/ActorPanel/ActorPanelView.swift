@@ -43,15 +43,6 @@ struct ActorPanelView: View {
                 }
             }
             .onHover { isHover in
-                if store.pomodoroTimer.isComplete {
-                    return
-                }
-                
-                let duration = 0.15
-                withAnimation(isHover ? .easeIn(duration: duration) : .easeOut(duration: duration)) {
-                    hoverAnimationProgress = isHover ? 1 : 0
-                }
-                
                 if !isHover,
                    isLongPress {
                     isLongPress = false
@@ -153,14 +144,7 @@ struct ActorPanelView: View {
     }
     
     // MARK: Helpers
-    
-    private var opacity: Double {
-        if isLongPress {
-            return 1
-        }
-        return max(0.1, 1 - hoverAnimationProgress)
-    }
-    
+
     private var shortLabel: String {
         switch store.currentInputSource {
         case .abc: "A"
