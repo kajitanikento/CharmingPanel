@@ -21,12 +21,12 @@ struct InputSourceObserver {
 
 extension DependencyValues {
     var inputSource: InputSourceObserver {
-        get { self[InputSourceKey.self] }
-        set { self[InputSourceKey.self] = newValue }
+        get { self[InputSourceObserver.self] }
+        set { self[InputSourceObserver.self] = newValue }
     }
 }
 
-private enum InputSourceKey: DependencyKey, Sendable {
+extension InputSourceObserver: DependencyKey, Sendable {
     
     static var liveValue: InputSourceObserver {
         let live = InputSourceObserverLive()
@@ -40,6 +40,7 @@ private enum InputSourceKey: DependencyKey, Sendable {
         )
     }
     
+    static let previewValue: InputSourceObserver = .init(stream: { .init { _ in } }, stop: {})
 }
 
 // MARK: - define live

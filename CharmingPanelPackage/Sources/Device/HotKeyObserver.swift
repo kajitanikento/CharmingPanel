@@ -20,12 +20,12 @@ struct HotKeyObserver {
 
 extension DependencyValues {
     var hotKeyObserver: HotKeyObserver {
-        get { self[HotKeyObserverKey.self] }
-        set { self[HotKeyObserverKey.self] = newValue }
+        get { self[HotKeyObserver.self] }
+        set { self[HotKeyObserver.self] = newValue }
     }
 }
 
-private enum HotKeyObserverKey: DependencyKey, Sendable {
+extension HotKeyObserver: DependencyKey, Sendable {
     
     static var liveValue: HotKeyObserver {
         let live = HotKeyObserverLive.shared
@@ -39,6 +39,7 @@ private enum HotKeyObserverKey: DependencyKey, Sendable {
         )
     }
     
+    static let previewValue: HotKeyObserver = .init(stream: { .init { _ in } }, stop: {})
 }
 
 // MARK: - defie live

@@ -189,8 +189,21 @@ struct ActorPanelView: View {
 
 #Preview {
     ActorPanelView(
-        store: .init(initialState: .init()) {
-            ActorPanel()
+        store: .init(
+            initialState: {
+                var state = ActorPanel.State()
+                state.pomodoroTimer.time = .init(startDate: .now, endDate: .now.addingTimeInterval(600))
+                state.cat.type = .hasTimer
+                return state
+            }()
+        ) {
+            withDependencies {
+                $0.inputSource.stream = { .init { continuation in
+                    continuation.yield(.hiragana)
+                } }
+            } operation: {
+                ActorPanel()
+            }
         }
     )
 }
