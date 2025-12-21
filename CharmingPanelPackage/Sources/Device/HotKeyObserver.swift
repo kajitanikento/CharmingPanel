@@ -8,9 +8,43 @@
 import Carbon.HIToolbox
 import Cocoa
 import ComposableArchitecture
+import DependenciesMacros
 
-final actor HotKeyObserver: Sendable {
-    static let shared = HotKeyObserver()
+// MARK: - define dependency interface
+
+@DependencyClient
+struct HotKeyObserver {
+    var stream: @Sendable () async -> AsyncStream<HotKey> = { .init { _ in } }
+    var stop: @Sendable () async -> Void
+}
+
+extension DependencyValues {
+    var hotKeyObserver: HotKeyObserver {
+        get { self[HotKeyObserverKey.self] }
+        set { self[HotKeyObserverKey.self] = newValue }
+    }
+}
+
+private enum HotKeyObserverKey: DependencyKey, Sendable {
+    
+    static var liveValue: HotKeyObserver {
+        let live = HotKeyObserverLive.shared
+        return .init(
+            stream: {
+                await live.stream
+            },
+            stop: {
+                await live.stop()
+            }
+        )
+    }
+    
+}
+
+// MARK: - defie live
+
+final actor HotKeyObserverLive: Sendable {
+    static let shared = HotKeyObserverLive()
     
     private var hotKeyRefs: [HotKey: EventHotKeyRef] = [:]
     private var continuation: AsyncStream<HotKey>.Continuation?
@@ -58,7 +92,7 @@ final actor HotKeyObserver: Sendable {
         hotKey: HotKey
     ) {
         
-        var hotKeyID = EventHotKeyID(
+        let hotKeyID = EventHotKeyID(
             signature: OSType(UInt32(truncatingIfNeeded: hotKey.fourCC)),
             id: hotKey.eventId
         )
@@ -95,8 +129,9 @@ final actor HotKeyObserver: Sendable {
                     nil,
                     &hkID
                 )
-                
-                HotKeyObserver.shared.onHotKeyPressed(eventId: hkID.id)
+                Task {
+                    await HotKeyObserverLive.shared.onHotKeyPressed(eventId: hkID.id)
+                }
                 return noErr
             },
             1,
@@ -133,19 +168,4 @@ enum HotKey: String, CaseIterable {
         }
         return nil
     }
-}
-
-// MARK: define swift dependency
-
-extension DependencyValues {
-    var hotKeyObserver: HotKeyObserver {
-        get { self[HotKeyObserverKey.self] }
-        set { self[HotKeyObserverKey.self] = newValue }
-    }
-}
-
-private enum HotKeyObserverKey: DependencyKey, Sendable {
-    
-    static let liveValue: HotKeyObserver = .shared
-    
 }

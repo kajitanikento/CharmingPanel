@@ -93,7 +93,7 @@ struct ActorPanel {
                 
             case .startObserveHotKey:
                 return .run { send in
-                    for await hotKey in await self.hotKeyObserver.stream {
+                    for await hotKey in await self.hotKeyObserver.stream() {
                         await send(.onPressHotKey(hotKey))
                     }
                 }
