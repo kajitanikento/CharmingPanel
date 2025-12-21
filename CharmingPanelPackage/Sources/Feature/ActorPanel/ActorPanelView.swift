@@ -9,7 +9,7 @@ import SwiftUI
 import ComposableArchitecture
 
 struct ActorPanelView: View {
-    static let size = CGSize(width: 120, height: 170)
+    nonisolated static let size = CGSize(width: 120, height: 170)
     
     @Bindable var store: StoreOf<ActorPanel>
 
@@ -189,7 +189,9 @@ struct ActorPanelView: View {
 
 #Preview {
     ActorPanelView(
-        store: .init(initialState: .init()) { ActorPanel() }
+        store: .init(initialState: .init()) {
+            ActorPanel()
+        }
     )
 }
 

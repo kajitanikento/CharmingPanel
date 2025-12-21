@@ -9,8 +9,42 @@ import SwiftUI
 import AppKit
 import Carbon
 import ComposableArchitecture
+import DependenciesMacros
 
-actor InputSourceObserver {
+// MARK: - define dependency interface
+
+@DependencyClient
+struct InputSourceObserver {
+    var stream: @Sendable () async -> AsyncStream<InputSource> = { .init { _ in } }
+    var stop: @Sendable () async -> Void
+}
+
+extension DependencyValues {
+    var inputSource: InputSourceObserver {
+        get { self[InputSourceKey.self] }
+        set { self[InputSourceKey.self] = newValue }
+    }
+}
+
+private enum InputSourceKey: DependencyKey, Sendable {
+    
+    static var liveValue: InputSourceObserver {
+        let live = InputSourceObserverLive()
+        return .init(
+            stream: {
+                await live.stream
+            },
+            stop: {
+                await live.stop()
+            }
+        )
+    }
+    
+}
+
+// MARK: - define live
+
+actor InputSourceObserverLive {
     private var observer: (any NSObjectProtocol)?
     private var continuation: AsyncStream<InputSource>.Continuation?
 
@@ -82,19 +116,4 @@ enum InputSource: Sendable {
         }
         return .hiragana
     }
-}
-
-// MARK: define swift dependency
-
-extension DependencyValues {
-    var inputSource: InputSourceObserver {
-        get { self[InputSourceKey.self] }
-        set { self[InputSourceKey.self] = newValue }
-    }
-}
-
-private enum InputSourceKey: DependencyKey, Sendable {
-    
-    static let liveValue: InputSourceObserver = .init()
-    
 }

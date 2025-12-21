@@ -86,7 +86,7 @@ struct ActorPanel {
                 
             case .startObserveInputSource:
                 return .run { send in
-                    for await newSouce in await self.inputSource.stream {
+                    for await newSouce in await self.inputSource.stream() {
                         await send(.changeInputSource(newSouce))
                     }
                 }
@@ -173,8 +173,8 @@ struct ActorPanel {
                     return .run { send in
                         await send(.cat(.changeAnimationInterval(0.07)))
                         
-                        let limitDate = await self.date.now.addingTimeInterval(30)
-                        for await _ in await self.clock.timer(interval: .seconds(0.1)) {
+                        let limitDate = self.date.now.addingTimeInterval(30)
+                        for await _ in self.clock.timer(interval: .seconds(0.1)) {
                             guard !Task.isCancelled else { return }
                             if self.date.now >= limitDate {
                                 await send(.pomodoroTimer(.stopTimer))
@@ -195,11 +195,7 @@ struct ActorPanel {
                         await send(.cat(.changeAnimationInterval(0.15)))
                         await send(.onStopTimer)
                     }
-                    
-                default:
-                    break
                 }
-                return .none
                 
             case .cat:
                 return .none
