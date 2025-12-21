@@ -15,8 +15,6 @@ struct ActorPanelView: View {
 
     @State var isLongPress = false
     @State var hoverAnimationProgress: Double = 0
-
-    @State var chooseTimerMinute: Int = 1
     
     var body: some View {
         content
