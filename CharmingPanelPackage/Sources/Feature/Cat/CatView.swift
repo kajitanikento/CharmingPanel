@@ -1,5 +1,5 @@
 //
-//  CatFrameForwardView.swift
+//  CatView.swift
 //  CharmingPanel
 //
 //  Created by kajitani kento on 2025/12/07.
@@ -11,10 +11,11 @@ import SwiftUI
 enum CatType {
     case onBall
     case hasTimer
+    case completeTimer
     case pickUp
 }
 
-struct CatFrameForwardView: View {
+struct CatView: View {
     @Bindable var store: StoreOf<Cat>
     
     @State var frameIndex = 0
@@ -64,6 +65,8 @@ extension CatType {
             makeFrames(name: "CatOnBallClear", count: 2)
         case .hasTimer:
             makeFrames(name: "CatHasTimer", count: 2)
+        case .completeTimer:
+            makeFrames(name: "CatHasTimerComplete", count: 2)
         case .pickUp:
             makeFrames(name: "CatPickUp", count: 2)
         }

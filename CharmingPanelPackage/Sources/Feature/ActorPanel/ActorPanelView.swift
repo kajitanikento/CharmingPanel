@@ -30,7 +30,7 @@ struct ActorPanelView: View {
                             ForEach(store.latestTimerMinutes.indices, id: \.self) { index in
                                 let minute = store.latestTimerMinutes[index]
                                 Button("\(minute)m") {
-                                    store.send(.pomodoroTimer(.startTimer(endDate: .now.addingTimeInterval(Double(minute * 60)))))
+                                    store.send(.pomodoroTimer(.startTimer(endDate: .now.addingTimeInterval(Double(minute)))))
                                     store.send(.setLatestTimerMinute(minute))
                                 }
                             }
@@ -126,12 +126,12 @@ struct ActorPanelView: View {
         PomodoroTimerView(
             store: store.scope(state: \.pomodoroTimer, action: \.pomodoroTimer)
         )
-        .offset(y: -22)
+        .offset(y: -20)
         .opacity(isLongPress ? 0 : 1)
     }
     
     private var cat: some View {
-        CatFrameForwardView(
+        CatView(
             store: store.scope(state: \.cat, action: \.cat)
         )
         .frame(width: Self.size.width - 12, height: Self.size.height - 12)
@@ -192,8 +192,9 @@ struct ActorPanelView: View {
         store: .init(
             initialState: {
                 var state = ActorPanel.State()
-                state.pomodoroTimer.time = .init(startDate: .now, endDate: .now.addingTimeInterval(600))
-                state.cat.type = .hasTimer
+                state.pomodoroTimer.time = .init(startDate: .now, endDate: .now.addingTimeInterval(3600))
+                state.pomodoroTimer.isComplete = true
+                state.cat.type = .completeTimer
                 return state
             }()
         ) {

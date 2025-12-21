@@ -16,25 +16,18 @@ struct PomodoroTimerView: View {
     var body: some View {
         if let timerText {
             timerText
-                .font(.system(size: 18, weight: .bold))
-                .foregroundStyle(.white)
         }
     }
     
     var timerText: Text? {
         if store.isComplete {
             return Text("終わり")
+                .font(.system(size: 19, weight: .heavy))
         }
         guard let time = store.time else {
             return nil
         }
         return Text(timerInterval: time.startDate...time.endDate, countsDown: true, showsHours: false)
-    }
-    
-    var backgroundColor: Color {
-        if store.isComplete {
-            return .orange
-        }
-        return .gray
+            .font(.system(size: 19, weight: .bold))
     }
 }

@@ -171,6 +171,7 @@ struct ActorPanel {
                 case .completeTimer:
                     let panelSize = state.panelSize
                     return .run { send in
+                        await send(.cat(.changeType(.completeTimer)))
                         await send(.cat(.changeAnimationInterval(0.07)))
                         
                         let limitDate = self.date.now.addingTimeInterval(30)
