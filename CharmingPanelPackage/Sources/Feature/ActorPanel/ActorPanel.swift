@@ -18,6 +18,7 @@ struct ActorPanel {
         var lastMouseLocation: (CGPoint, Date)?
 
         var isHide: Bool = false
+        var isShowMenu = false
         var withMove: Bool = false
 
         var latestTimerMinutes: [Int] = []
@@ -26,7 +27,14 @@ struct ActorPanel {
         var cat: Cat.State = .init()
 
         var panelSize: CGSize {
-            ActorPanelView.size
+            let actorSize = ActorPanelView.size
+            if isShowMenu {
+                return .init(
+                    width: actorSize.width + 20 + ActorPanelView.menuSize.width,
+                    height: actorSize.height
+                )
+            }
+            return ActorPanelView.size
         }
     }
     
@@ -34,6 +42,7 @@ struct ActorPanel {
         // Lifecycle
         case onAppear
         case onDisappear
+        case didResignActive
 
         // Store inputs
         case startObserveInputSource
@@ -48,6 +57,7 @@ struct ActorPanel {
 
         // View inputs
         case toggleHidden(to: Bool? = nil)
+        case toggleMenuHidden(to: Bool? = nil)
         case toggleWithAnimation
         case toggleWithMove
         case setLatestTimerMinute(Int)
@@ -83,6 +93,10 @@ struct ActorPanel {
                 return .run { _ in
                     await inputSource.stop()
                 }
+                
+            case .didResignActive:
+                state.isShowMenu = false
+                return .none
                 
             case .startObserveInputSource:
                 return .run { send in
@@ -142,6 +156,14 @@ struct ActorPanel {
                     state.isHide = isHide
                 } else {
                     state.isHide.toggle()
+                }
+                return .none
+                
+            case let .toggleMenuHidden(isHide):
+                if let isHide {
+                    state.isShowMenu = !isHide
+                } else {
+                    state.isShowMenu.toggle()
                 }
                 return .none
             

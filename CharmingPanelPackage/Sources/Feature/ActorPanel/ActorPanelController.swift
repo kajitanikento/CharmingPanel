@@ -23,35 +23,45 @@ final class ActorPanelController {
         store: StoreOf<ActorPanel>
     ) {
         self.store = store
+        
         setup()
         observeStore()
+        observeNotification()
+    }
+    
+    deinit {
+        NotificationCenter.default.removeObserver(
+            self,
+            name: NSApplication.didResignActiveNotification,
+            object: nil
+        )
     }
     
     private func setup() {
         panel.styleMask = .borderless
         panel.backingType = .buffered
-        panel.isMovableByWindowBackground = true
+        panel.isMovableByWindowBackground = false
         panel.isReleasedWhenClosed = false
         panel.hidesOnDeactivate = false
         panel.backgroundColor = .clear
         panel.hasShadow = false
         panel.isOpaque = false
-
+        
         panel.level = .floating
         panel.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
-
+        
         hostingView = NSHostingView(rootView: ActorPanelView(
             store: store
         ))
         hostingView.translatesAutoresizingMaskIntoConstraints = false
-
+        
         let contentView = NSView()
         contentView.wantsLayer = true
         contentView.layer?.backgroundColor = NSColor.clear.cgColor
         panel.contentView = contentView
-
+        
         contentView.addSubview(hostingView)
-
+        
         // hostingViewのサイズに合わせてcontentViewとpanelのサイズを設定
         NSLayoutConstraint.activate([
             hostingView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor),
@@ -85,6 +95,22 @@ final class ActorPanelController {
             movePanel(to: movingPanelPosition.position, duration: movingPanelPosition.animationDuration)
             store.send(.finishMovePanelPosition)
         })
+        
+        observations.append(observe { [weak self] in
+            guard let self else { return }
+            let isShowMenu = store.isShowMenu
+            guard isShowMenu else { return }
+            show()
+        })
+    }
+    
+    private func observeNotification() {
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(didResignActive),
+            name: NSApplication.didResignActiveNotification,
+            object: nil
+        )
     }
     
     private func updatePanelSize() {
@@ -116,5 +142,9 @@ final class ActorPanelController {
     
     private func hide() {
         panel.orderOut(nil)
+    }
+    
+    @objc private func didResignActive(_ notification: Notification) {
+        store.send(.didResignActive)
     }
 }

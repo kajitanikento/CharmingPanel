@@ -10,92 +10,16 @@ import ComposableArchitecture
 
 struct ActorPanelView: View {
     nonisolated static let size = CGSize(width: 120, height: 170)
+    nonisolated static let menuSize = CGSize(width: 274, height: 170)
     
     @Bindable var store: StoreOf<ActorPanel>
 
     @State var isLongPress = false
     @State var hoverAnimationProgress: Double = 0
+    @State var isHoverActor = false
     
     var body: some View {
         content
-            .contextMenu {
-                if store.pomodoroTimer.isTimerRunning {
-                    Button("Stop timer", systemImage: "stop.fill") {
-                        store.send(.pomodoroTimer(.stopTimer))
-                    }
-                } else {
-                    Menu("Start timer", systemImage: "gauge.with.needle") {
-                        if !store.latestTimerMinutes.isEmpty {
-                            Text("recent")
-                            ForEach(store.latestTimerMinutes.indices, id: \.self) { index in
-                                let minute = store.latestTimerMinutes[index]
-                                Button("\(minute)m") {
-                                    store.send(.pomodoroTimer(.startTimer(endDate: .now.addingTimeInterval(Double(minute * 60)))))
-                                    store.send(.setLatestTimerMinute(minute))
-                                }
-                            }
-
-                            Divider()
-                        }
-
-                        Menu("choose") {
-                            ForEach(1...12, id: \.self) { num in
-                                let minute = num * 5
-                                Button("\(minute)m") {
-                                    store.send(.pomodoroTimer(.startTimer(endDate: .now.addingTimeInterval(Double(minute * 60)))))
-                                    store.send(.setLatestTimerMinute(minute))
-                                }
-                            }
-                        }
-                    }
-                }
-                
-                Divider()
-                
-                Button("\(store.state.cat.withAnimation ? "Stop" : "Start") animation", systemImage: "figure.run") {
-                    store.send(.toggleWithAnimation)
-                }
-                
-                Divider()
-                
-                Button("Hide panel", systemImage: "eye.slash") {
-                    store.send(.toggleHidden(to: true))
-                }
-            }
-            .onHover { isHover in
-                if !isHover,
-                   isLongPress {
-                    isLongPress = false
-                }
-            }
-            .onRightClick {
-                
-            }
-            .onTapGesture {
-                if store.pomodoroTimer.isComplete {
-                    store.send(.pomodoroTimer(.stopTimer))
-                }
-            }
-            .onLongPressGesture(
-                minimumDuration: 1,
-                perform: { /** no operations */ },
-                onPressingChanged: { isPress in
-                    guard isPress,
-                          !store.pomodoroTimer.isComplete else {
-                        return
-                    }
-                    
-                    isLongPress = true
-                }
-            )
-            .gesture(
-                WindowDragGesture()
-                    .onEnded { _ in
-                        if isLongPress {
-                            isLongPress = false
-                        }
-                    }
-            )
             .onAppear {
                 store.send(.onAppear)
             }
@@ -116,14 +40,54 @@ struct ActorPanelView: View {
     }
     
     private var content: some View {
+        HStack(spacing: 20) {
+            actorContent
+            
+            if store.isShowMenu {
+                menuContent
+            }
+        }
+    }
+    
+    // MARK: Subviews
+    
+    private var actorContent: some View {
         ZStack {
             inputSourceLabel
             cat
             pomodoroTimer
         }
+        .onRightClick {
+            store.send(.toggleMenuHidden())
+        }
+        .onLongPressGesture(
+            minimumDuration: 1,
+            perform: { /** no operations */ },
+            onPressingChanged: { isPress in
+                guard isPress else {
+                    return
+                }
+                if store.pomodoroTimer.isComplete {
+                    store.send(.pomodoroTimer(.stopTimer))
+                    return
+                }
+                
+                isLongPress = true
+            }
+        )
+        .onEndWindowDrag(disable: !canMovePanel) {
+            if isLongPress {
+                isLongPress = false
+            }
+        }
+        .onHover { isHover in
+            isHoverActor = isHover
+            if !isHover,
+               isLongPress {
+                isLongPress = false
+            }
+        }
     }
-    
-    // MARK: Subviews
     
     private var pomodoroTimer: some View {
         PomodoroTimerView(
@@ -166,6 +130,63 @@ struct ActorPanelView: View {
         .clipShape(Circle())
     }
     
+    private var menuContent: some View {
+        VStack {
+            // TODO: impl
+            //            .contextMenu {
+            //                if store.pomodoroTimer.isTimerRunning {
+            //                    Button("Stop timer", systemImage: "stop.fill") {
+            //                        store.send(.pomodoroTimer(.stopTimer))
+            //                    }
+            //                } else {
+            //                    Menu("Start timer", systemImage: "gauge.with.needle") {
+            //                        if !store.latestTimerMinutes.isEmpty {
+            //                            Text("recent")
+            //                            ForEach(store.latestTimerMinutes.indices, id: \.self) { index in
+            //                                let minute = store.latestTimerMinutes[index]
+            //                                Button("\(minute)m") {
+            //                                    store.send(.pomodoroTimer(.startTimer(endDate: .now.addingTimeInterval(Double(minute * 60)))))
+            //                                    store.send(.setLatestTimerMinute(minute))
+            //                                }
+            //                            }
+            //
+            //                            Divider()
+            //                        }
+            //
+            //                        Menu("choose") {
+            //                            ForEach(1...12, id: \.self) { num in
+            //                                let minute = num * 5
+            //                                Button("\(minute)m") {
+            //                                    store.send(.pomodoroTimer(.startTimer(endDate: .now.addingTimeInterval(Double(minute * 60)))))
+            //                                    store.send(.setLatestTimerMinute(minute))
+            //                                }
+            //                            }
+            //                        }
+            //                    }
+            //                }
+            //
+            //                Divider()
+            //
+            //                Button("\(store.state.cat.withAnimation ? "Stop" : "Start") animation", systemImage: "figure.run") {
+            //                    store.send(.toggleWithAnimation)
+            //                }
+            //
+            //                Divider()
+            //
+            //                Button("Hide panel", systemImage: "eye.slash") {
+            //                    store.send(.toggleHidden(to: true))
+            //                }
+            //            }
+        }
+        .frame(
+            width: Self.menuSize.width - 8,
+            height: Self.menuSize.height - 8
+        )
+        .background(.white)
+        .clipShape(RoundedRectangle(cornerRadius: 20))
+        .shadow(color: .black.opacity(0.2),radius: 4, x: 2, y: 2)
+    }
+    
     // MARK: Helpers
 
     private var shortLabel: String {
@@ -187,6 +208,13 @@ struct ActorPanelView: View {
         case .abc: .blue
         case .hiragana: .red
         }
+    }
+    
+    var canMovePanel: Bool {
+        if store.isShowMenu {
+            return isHoverActor
+        }
+        return true
     }
 }
 
@@ -210,4 +238,22 @@ struct ActorPanelView: View {
             }
         }
     )
+}
+
+extension View {
+    
+    @ViewBuilder
+    func onEndWindowDrag(disable: Bool, perform action: @escaping () -> Void) -> some View {
+        if disable {
+            self
+        } else {
+            self.gesture(
+                WindowDragGesture()
+                    .onEnded { _ in
+                        action()
+                    }
+            )
+        }
+    }
+    
 }
