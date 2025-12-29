@@ -14,13 +14,13 @@ struct Cat {
     @ObservableState
     struct State {
         var type: CatType = .onBall
-        var animationInterval: Double = 0.15
+        var animationInterval: AnimationInterval = .default
         var withAnimation: Bool = true
     }
     
     enum Action {
         case changeType(CatType)
-        case changeAnimationInterval(Double)
+        case changeAnimationInterval(AnimationInterval)
         case toggleWithAnimation
     }
     
@@ -38,6 +38,22 @@ struct Cat {
             case . toggleWithAnimation:
                 state.withAnimation.toggle()
                 return .none
+            }
+        }
+    }
+}
+
+extension Cat {
+    enum AnimationInterval {
+        case `default`
+        case quick
+        case custom(value: Double)
+        
+        var value: Double {
+            switch self {
+            case .default: 0.3
+            case .quick: 0.07
+            case .custom(let value): value
             }
         }
     }

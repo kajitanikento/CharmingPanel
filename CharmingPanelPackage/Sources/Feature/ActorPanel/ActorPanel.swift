@@ -194,7 +194,7 @@ struct ActorPanel {
                     let panelSize = state.panelSize
                     return .run { send in
                         await send(.cat(.changeType(.completeTimer)))
-                        await send(.cat(.changeAnimationInterval(0.07)))
+                        await send(.cat(.changeAnimationInterval(.quick)))
                         
                         let limitDate = self.date.now.addingTimeInterval(30)
                         for await _ in self.clock.timer(interval: .seconds(0.1)) {
@@ -215,7 +215,7 @@ struct ActorPanel {
                 case .stopTimer:
                     return .run { send in
                         await send(.cat(.changeType(.onBall)))
-                        await send(.cat(.changeAnimationInterval(0.15)))
+                        await send(.cat(.changeAnimationInterval(.default)))
                         await send(.onStopTimer)
                     }
                 }
