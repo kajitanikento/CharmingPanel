@@ -10,7 +10,6 @@ import ComposableArchitecture
 
 struct ActorPanelView: View {
     nonisolated static let size = CGSize(width: 120, height: 170)
-    nonisolated static let menuSize = CGSize(width: 274, height: 170)
     
     @Bindable var store: StoreOf<ActorPanel>
 
@@ -26,27 +25,10 @@ struct ActorPanelView: View {
             .onDisappear {
                 store.send(.onDisappear)
             }
-            .onChange(of: isLongPress) {
-                if isLongPress {
-                    store.send(.cat(.changeType(.pickUp)))
-                    return
-                }
-                if store.pomodoroTimer.isTimerRunning {
-                    store.send(.cat(.changeType(.hasTimer)))
-                    return
-                }
-                store.send(.cat(.changeType(.onBall)))
-            }
     }
     
     private var content: some View {
-        HStack(spacing: 20) {
-            actorContent
-            
-            if store.isShowMenu {
-                menuContent
-            }
-        }
+        actorContent
     }
     
     // MARK: Subviews
@@ -86,6 +68,17 @@ struct ActorPanelView: View {
                isLongPress {
                 isLongPress = false
             }
+        }
+        .onChange(of: isLongPress) {
+            if isLongPress {
+                store.send(.cat(.changeType(.pickUp)))
+                return
+            }
+            if store.pomodoroTimer.isTimerRunning {
+                store.send(.cat(.changeType(.hasTimer)))
+                return
+            }
+            store.send(.cat(.changeType(.onBall)))
         }
     }
     
@@ -130,60 +123,12 @@ struct ActorPanelView: View {
         .clipShape(Circle())
     }
     
-    private var menuContent: some View {
-        VStack {
-            // TODO: impl
-            //            .contextMenu {
-            //                if store.pomodoroTimer.isTimerRunning {
-            //                    Button("Stop timer", systemImage: "stop.fill") {
-            //                        store.send(.pomodoroTimer(.stopTimer))
-            //                    }
-            //                } else {
-            //                    Menu("Start timer", systemImage: "gauge.with.needle") {
-            //                        if !store.latestTimerMinutes.isEmpty {
-            //                            Text("recent")
-            //                            ForEach(store.latestTimerMinutes.indices, id: \.self) { index in
-            //                                let minute = store.latestTimerMinutes[index]
-            //                                Button("\(minute)m") {
-            //                                    store.send(.pomodoroTimer(.startTimer(endDate: .now.addingTimeInterval(Double(minute * 60)))))
-            //                                    store.send(.setLatestTimerMinute(minute))
-            //                                }
-            //                            }
-            //
-            //                            Divider()
-            //                        }
-            //
-            //                        Menu("choose") {
-            //                            ForEach(1...12, id: \.self) { num in
-            //                                let minute = num * 5
-            //                                Button("\(minute)m") {
-            //                                    store.send(.pomodoroTimer(.startTimer(endDate: .now.addingTimeInterval(Double(minute * 60)))))
-            //                                    store.send(.setLatestTimerMinute(minute))
-            //                                }
-            //                            }
-            //                        }
-            //                    }
-            //                }
-            //
-            //                Divider()
-            //
-            //                Button("\(store.state.cat.withAnimation ? "Stop" : "Start") animation", systemImage: "figure.run") {
-            //                    store.send(.toggleWithAnimation)
-            //                }
-            //
-            //                Divider()
-            //
-            //                Button("Hide panel", systemImage: "eye.slash") {
-            //                    store.send(.toggleHidden(to: true))
-            //                }
-            //            }
-        }
-        .frame(
-            width: Self.menuSize.width - 8,
-            height: Self.menuSize.height - 8
+    private var menuConetnt: some View {
+        ActorPanelMenuView(
+            store: store.scope(state: \.menu, action: \.menu)
         )
-        .background(.white)
-        .clipShape(RoundedRectangle(cornerRadius: 20))
+        .frame(width: ActorPanelMenuView.size.width - 4, height: ActorPanelMenuView.size.height - 4)
+        .offset(x: -6, y: 4)
         .shadow(color: .black.opacity(0.2),radius: 4, x: 2, y: 2)
     }
     
@@ -223,9 +168,8 @@ struct ActorPanelView: View {
         store: .init(
             initialState: {
                 var state = ActorPanel.State()
-                state.pomodoroTimer.time = .init(startDate: .now, endDate: .now.addingTimeInterval(3600))
-                state.pomodoroTimer.isComplete = true
-                state.cat.type = .completeTimer
+                state.cat.type = .onBall
+                state.isShowMenu = true
                 return state
             }()
         ) {
@@ -238,22 +182,4 @@ struct ActorPanelView: View {
             }
         }
     )
-}
-
-extension View {
-    
-    @ViewBuilder
-    func onEndWindowDrag(disable: Bool, perform action: @escaping () -> Void) -> some View {
-        if disable {
-            self
-        } else {
-            self.gesture(
-                WindowDragGesture()
-                    .onEnded { _ in
-                        action()
-                    }
-            )
-        }
-    }
-    
 }

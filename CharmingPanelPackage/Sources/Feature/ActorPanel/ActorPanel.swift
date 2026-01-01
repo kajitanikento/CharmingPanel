@@ -25,17 +25,7 @@ struct ActorPanel {
 
         var pomodoroTimer: PomodoroTimer.State = .init()
         var cat: Cat.State = .init()
-
-        var panelSize: CGSize {
-            let actorSize = ActorPanelView.size
-            if isShowMenu {
-                return .init(
-                    width: actorSize.width + 20 + ActorPanelView.menuSize.width,
-                    height: actorSize.height
-                )
-            }
-            return ActorPanelView.size
-        }
+        var menu: ActorPanelMenu.State = .init()
     }
     
     enum Action {
@@ -68,6 +58,7 @@ struct ActorPanel {
         // Child reducer
         case pomodoroTimer(PomodoroTimer.Action)
         case cat(Cat.Action)
+        case menu(ActorPanelMenu.Action)
     }
     
     enum CancelID: String {
@@ -86,7 +77,7 @@ struct ActorPanel {
                 return .run { send in
                     await send(.startObserveInputSource)
                     await send(.startObserveHotKey)
-                    await send(.startObserveMouseLocation)
+                    // await send(.startObserveMouseLocation)
                 }
                 
             case .onDisappear:
@@ -216,6 +207,16 @@ struct ActorPanel {
                 
             case .cat:
                 return .none
+                
+            case .menu(let action):
+                switch action {
+                case .onStartTimer(let intervalMinute):
+                    return .run { send in
+                        await send(.pomodoroTimer(.startTimer(endDate: .now.addingTimeInterval(Double(intervalMinute * 60)))))
+                        await send(.toggleMenuHidden(to: true))
+                    }
+                }
+                
             }
         }
         
@@ -225,6 +226,10 @@ struct ActorPanel {
         
         Scope(state: \.cat, action: \.cat) {
             Cat()
+        }
+        
+        Scope(state: \.menu, action: \.menu) {
+            ActorPanelMenu()
         }
     }
     
