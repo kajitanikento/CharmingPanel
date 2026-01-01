@@ -53,7 +53,9 @@ struct ActorPanelView: View {
                     store.send(.pomodoroTimer(.stopTimer))
                     return
                 }
-                
+                if store.isShowMenu {
+                    store.send(.toggleMenuHidden(to: true))
+                }
                 isLongPress = true
             }
         )
