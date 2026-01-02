@@ -14,6 +14,7 @@ struct ActorPanelMenu {
     @ObservableState
     struct State {
         var startedTimerTime: PomodoroTimer.PomodoroTime?
+        var timeIntervalMinuteHistory: [Int] = []
     }
     
     enum Action {
@@ -28,12 +29,27 @@ struct ActorPanelMenu {
             switch action {
             case .onClickStartTimer(let time):
                 state.startedTimerTime = time
+                updateTime(intervalMinute: time.intervalMinute, state: &state)
                 return .none
                 
             case .onClickStopTimer:
                 state.startedTimerTime = nil
                 return .none
             }
+        }
+    }
+    
+    private func updateTime(intervalMinute: Int, state: inout State) {
+        if let index = state.timeIntervalMinuteHistory.firstIndex(of: intervalMinute) {
+            state.timeIntervalMinuteHistory.remove(at: index)
+            state.timeIntervalMinuteHistory.insert(intervalMinute, at: 0)
+            return
+        }
+        
+        state.timeIntervalMinuteHistory.insert(intervalMinute, at: 0)
+        
+        if state.timeIntervalMinuteHistory.count > 5 {
+            state.timeIntervalMinuteHistory.removeLast()
         }
     }
 }

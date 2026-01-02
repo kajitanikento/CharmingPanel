@@ -46,7 +46,10 @@ struct ActorPanelMenuView: View {
     var timerStartContent: some View {
         VStack(alignment: .leading, spacing: 12) {
             timerPresets
-            timerHistory
+            
+            if store.timeIntervalMinuteHistory.isNotEmpty {
+                timerHistory
+            }
         }
     }
     
@@ -61,13 +64,6 @@ struct ActorPanelMenuView: View {
         }
     }
     
-    // TODO: impl
-    var _history: [Int] {
-        [
-            25, 5
-        ]
-    }
-    
     var timerHistory: some View {
         VStack(alignment: .leading, spacing: 9) {
             Text("最近の項目")
@@ -76,7 +72,7 @@ struct ActorPanelMenuView: View {
             
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 12) {
-                    ForEach(_history, id: \.self) { interval in
+                    ForEach(store.timeIntervalMinuteHistory, id: \.self) { interval in
                         timerStartButton(
                             intervalMinute: interval,
                             backgroundColor: .orange
