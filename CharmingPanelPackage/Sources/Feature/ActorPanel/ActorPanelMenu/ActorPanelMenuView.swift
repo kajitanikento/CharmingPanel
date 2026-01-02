@@ -9,8 +9,6 @@ import SwiftUI
 import ComposableArchitecture
 
 struct ActorPanelMenuView: View {
-    nonisolated static let size = CGSize(width: 274 + 4, height: 210 + 4)
-    
     @Bindable var store: StoreOf<ActorPanelMenu>
     
     @State var sliderValue: Int = 5
@@ -23,7 +21,8 @@ struct ActorPanelMenuView: View {
             
             Spacer()
         }
-        
+        .frame(width: 280)
+        .padding(4)
     }
     
     // MARK: Timer menu
@@ -197,8 +196,5 @@ struct ActorPanelMenuView: View {
                 ActorPanelMenu()
             }
         )
-        .frame(width: ActorPanelMenuView.size.width, height: ActorPanelMenuView.size.height)
-            .overlay(.black, in: RoundedRectangle(cornerRadius: 20).stroke(style: .init(lineWidth: 2, dash: [2, 4])))
-
     }
 }

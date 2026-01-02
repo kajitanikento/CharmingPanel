@@ -119,15 +119,6 @@ struct ActorPanelView: View {
         .clipShape(Circle())
     }
     
-    private var menuConetnt: some View {
-        ActorPanelMenuView(
-            store: store.scope(state: \.menu, action: \.menu)
-        )
-        .frame(width: ActorPanelMenuView.size.width - 4, height: ActorPanelMenuView.size.height - 4)
-        .offset(x: -6, y: 4)
-        .shadow(color: .black.opacity(0.2),radius: 4, x: 2, y: 2)
-    }
-    
     // MARK: Helpers
 
     private var shortLabel: String {

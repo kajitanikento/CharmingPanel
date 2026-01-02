@@ -167,18 +167,23 @@ final class ActorPanelController {
         }
 
         setupMenu()
-
-        let menuOrigin = calculateMenuPosition(
-            actorFrame: actorPanel.frame,
-            menuSize: ActorPanelMenuView.size
-        )
-        menuPanel?.setFrame(
-            CGRect(origin: menuOrigin, size: ActorPanelMenuView.size),
-            display: true
-        )
         
+        // WORKAROUND: SwiftUIのViewでのサイズを取得するために見えない透過度で表示しておく
+        menuPanel?.alphaValue = 0.01
         menuPanel?.makeKeyAndOrderFront(nil)
         NSApp.activate(ignoringOtherApps: true)
+        
+        if let menuSize = menuPanel?.frame.size {
+            let menuOrigin = calculateMenuPosition(
+                actorFrame: actorPanel.frame,
+                menuSize: menuSize
+            )
+            menuPanel?.setFrame(
+                CGRect(origin: menuOrigin, size: menuSize),
+                display: true
+            )
+            menuPanel?.alphaValue = 1
+        }
     }
     
     private func setupMenu() {
@@ -211,9 +216,7 @@ final class ActorPanelController {
             newMenuHostingView.topAnchor.constraint(equalTo: contentView.topAnchor),
             newMenuHostingView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor),
             newMenuHostingView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
-            newMenuHostingView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
-            newMenuHostingView.widthAnchor.constraint(equalToConstant: ActorPanelMenuView.size.width),
-            newMenuHostingView.heightAnchor.constraint(equalToConstant: ActorPanelMenuView.size.height)
+            newMenuHostingView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor)
         ])
         
         menuPanel = newMenuPanel
