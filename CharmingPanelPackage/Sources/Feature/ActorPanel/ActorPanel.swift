@@ -129,7 +129,7 @@ struct ActorPanel {
                 return .none
                 
             case .onRightClickActor:
-                toggleMenuHidden(to: false, state: &state)
+                toggleMenuHidden(state: &state)
                 return .none
                 
             case .onLongPressActor:
@@ -205,7 +205,7 @@ struct ActorPanel {
         }
     }
     
-    private func togglePanelHidden(to isHidden: Bool?, state: inout State) {
+    private func togglePanelHidden(to isHidden: Bool? = nil, state: inout State) {
         if let isHidden {
             state.isPanelHidden = isHidden
         } else {
@@ -213,7 +213,7 @@ struct ActorPanel {
         }
     }
     
-    private func toggleMenuHidden(to isHidden: Bool?, state: inout State) {
+    private func toggleMenuHidden(to isHidden: Bool? = nil, state: inout State) {
         if let isHidden {
             state.isShowMenu = !isHidden
         } else {
