@@ -162,15 +162,8 @@ final class ActorPanelController {
     private func showMenu() {
         // 既にメニューパネルが存在する場合はアクティブ化
         if let menuPanel = menuPanel {
-            // 既に表示されている場合はアニメーションなしで前面に
-            if menuPanel.isVisible {
-                menuPanel.makeKeyAndOrderFront(nil)
-                NSApp.activate(ignoringOtherApps: true)
-                return
-            }
-
-            // 非表示状態から再表示する場合はアニメーション付きで
-            animateMenuShow(menuPanel)
+            menuPanel.makeKeyAndOrderFront(nil)
+            NSApp.activate(ignoringOtherApps: true)
             return
         }
 
@@ -184,50 +177,9 @@ final class ActorPanelController {
             CGRect(origin: menuOrigin, size: ActorPanelMenuView.size),
             display: true
         )
-
-        // アニメーション付きでパネルを表示
-        if let menuPanel = menuPanel {
-            animateMenuShow(menuPanel)
-        }
-    }
-
-    private func animateMenuShow(_ panel: NSPanel) {
-        // 初期状態を設定（透明＋スケールダウン）
-        panel.alphaValue = 0.0
-
-        // contentViewのアンカーポイントを設定してスケール変換を適用
-        if let contentView = panel.contentView {
-            contentView.wantsLayer = true
-            contentView.layer?.anchorPoint = CGPoint(x: 0.5, y: 1.0) // 上部中央を基準
-
-            // anchorPointを変更するとpositionも調整が必要
-            let bounds = contentView.bounds
-            contentView.layer?.position = CGPoint(
-                x: bounds.width / 2,
-                y: bounds.height
-            )
-
-            // 初期スケール（少し小さく）
-            contentView.layer?.transform = CATransform3DMakeScale(0.95, 0.95, 1.0)
-        }
-
-        // パネルを表示（アニメーション前）
-        panel.makeKeyAndOrderFront(nil)
+        
+        menuPanel?.makeKeyAndOrderFront(nil)
         NSApp.activate(ignoringOtherApps: true)
-
-        // アニメーション実行
-        NSAnimationContext.runAnimationGroup { context in
-            context.duration = 0.1
-            context.timingFunction = CAMediaTimingFunction(name: .easeOut)
-
-            // フェードイン
-            panel.animator().alphaValue = 1.0
-
-            // スケールアップ
-            if let contentView = panel.contentView {
-                contentView.layer?.transform = CATransform3DIdentity
-            }
-        }
     }
     
     private func setupMenu() {
@@ -319,7 +271,7 @@ final class ActorPanelController {
 
         // フェードアウトアニメーションを実行
         NSAnimationContext.runAnimationGroup({ context in
-            context.duration = 0.15
+            context.duration = 0.1
             context.timingFunction = CAMediaTimingFunction(name: .easeIn)
 
             // フェードアウト
