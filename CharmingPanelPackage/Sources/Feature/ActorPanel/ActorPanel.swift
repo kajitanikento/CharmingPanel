@@ -179,6 +179,7 @@ struct ActorPanel {
                     
                 case .completeTimer:
                     return .run { send in
+                        await send(.toggleMenuHidden(to: true))
                         await send(.cat(.changeType(.completeTimer)))
                         await send(.cat(.changeAnimationInterval(.quick)))
                         
@@ -274,6 +275,10 @@ struct ActorPanel {
         }
         if state.isShowMenu {
             state.cat.type = .think
+            return
+        }
+        if state.pomodoroTimer.isComplete {
+            state.cat.type = .completeTimer
             return
         }
         if state.pomodoroTimer.isTimerRunning {

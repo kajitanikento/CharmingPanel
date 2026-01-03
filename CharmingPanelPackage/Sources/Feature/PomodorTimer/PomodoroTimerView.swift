@@ -29,5 +29,6 @@ struct PomodoroTimerView: View {
         }
         return Text(timerInterval: time.startDate...time.endDate, countsDown: true, showsHours: false)
             .font(.system(size: 20, weight: .bold))
+            .foregroundStyle(.white)
     }
 }

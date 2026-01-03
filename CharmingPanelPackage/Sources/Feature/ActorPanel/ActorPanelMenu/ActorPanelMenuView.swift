@@ -114,8 +114,11 @@ struct ActorPanelMenuView: View {
     
     func timerStopContent(startedTimerTime: PomodoroTimer.PomodoroTime) -> some View {
         HStack(spacing: 12) {
-            Text(timerInterval: startedTimerTime.timeInterval, showsHours: false)
             timerStopButton
+            Text(timerInterval: startedTimerTime.timeInterval, showsHours: false)
+                .font(.title2.bold().monospaced())
+                .foregroundStyle(.gray)
+            
         }
         .padding(.horizontal, 16)
     }
@@ -126,7 +129,10 @@ struct ActorPanelMenuView: View {
                 store.send(.onClickStopTimer)
             },
             label: {
-                Text("停止")
+                Image(systemName: "stop.fill")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 16)
             },
                    foregroundColor: .white,
             backgroundColor: .blue
@@ -190,7 +196,9 @@ struct ActorPanelMenuView: View {
         Color.blue
         
         ActorPanelMenuView(
-            store: .init(initialState: ActorPanelMenu.State()) {
+            store: .init(initialState: ActorPanelMenu.State(
+                startedTimerTime: .init(startDate: .now, intervalMinute: 30)
+            )) {
                 ActorPanelMenu()
             }
         )
