@@ -25,7 +25,7 @@ struct ActorPanelMenuView: View {
     var content: some View {
         VStack(spacing: 8) {
             timerMenu
-            menuTile
+            menuTiles
             
             Spacer()
         }
@@ -140,10 +140,15 @@ struct ActorPanelMenuView: View {
     
     // MARK: Menu tile
     
-    var menuTile: some View {
-        LazyVGrid(columns: Array(repeating: .init(), count: 4)) {
-            hidePanelTile
-            quitAppTile
+    var menuTiles: some View {
+        HStack {
+            LazyVGrid(columns: Array(repeating: .init(), count: 4), alignment: .leading, spacing: 8) {
+                hidePanelTile
+                quitAppTile
+            }
+            .frame(width: tileWidth * 4 + tileSpacing * 3)
+            
+            Spacer()
         }
     }
     
@@ -175,6 +180,28 @@ struct ActorPanelMenuView: View {
         .help("アプリを終了")
     }
     
+    var tileWidth: CGFloat { 48 }
+    var tileSpacing: CGFloat { 8 }
+    
+    func menuTile<Content: View>(
+        action: @escaping () -> Void,
+        foregroundColor: Color = .black,
+        backgroundColor: Color = .white,
+        @ViewBuilder content: @escaping () -> Content
+    ) -> some View {
+        Button(action: action) {
+            ZStack {
+                backgroundColor
+                
+                content()
+            }
+            .frame(width: tileWidth, height: tileWidth)
+            .foregroundStyle(foregroundColor)
+        }
+        .buttonStyle(.plain)
+        .clipShape(RoundedRectangle(cornerRadius: 20))
+    }
+    
     // MARK: Common
     
     func menuBlock<Content: View>(
@@ -193,25 +220,6 @@ struct ActorPanelMenuView: View {
         }
         .padding(.vertical, 16)
         .background(.white)
-        .clipShape(RoundedRectangle(cornerRadius: 20))
-    }
-    
-    func menuTile<Content: View>(
-        action: @escaping () -> Void,
-        foregroundColor: Color = .black,
-        backgroundColor: Color = .white,
-        @ViewBuilder content: @escaping () -> Content
-    ) -> some View {
-        Button(action: action) {
-            ZStack {
-                backgroundColor
-                
-                content()
-            }
-            .frame(width: 64, height: 64)
-            .foregroundStyle(foregroundColor)
-        }
-        .buttonStyle(.plain)
         .clipShape(RoundedRectangle(cornerRadius: 20))
     }
     
