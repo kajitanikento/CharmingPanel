@@ -39,8 +39,9 @@ struct ActorPanel {
         case startObserveHotKey
         case startMovePanelPosition(MovePanelInfo)
         case finishMovePanelPosition
-        case onPressHotKey(HotKey)
-        case onStopTimer
+        case toggleMenuHidden(to: Bool? = nil)
+        case handle(HotKey)
+        case cancel(CancelID)
 
         // View inputs
         case onClickTogglePanelHidden(to: Bool? = nil)
@@ -95,11 +96,15 @@ struct ActorPanel {
             case .startObserveHotKey:
                 return .run { send in
                     for await hotKey in await self.hotKeyObserver.stream() {
-                        await send(.onPressHotKey(hotKey))
+                        await send(.handle(hotKey))
                     }
                 }
                 
-            case let .onPressHotKey(hotKey):
+            case .toggleMenuHidden(let isHide):
+                toggleMenuHidden(to: isHide, state: &state)
+                return .none
+                
+            case let .handle(hotKey):
                 switch hotKey {
                 case .callCat:
                     if state.isPanelHidden {
@@ -113,8 +118,8 @@ struct ActorPanel {
                 
                 return .none
                 
-            case .onStopTimer:
-                return .cancel(id: CancelID.moveCatOnCompleteTimer)
+            case .cancel(let id):
+                return .cancel(id: id)
                 
             case let .startMovePanelPosition(info):
                 state.movingPanelPosition = info
@@ -192,7 +197,7 @@ struct ActorPanel {
                     return .run { send in
                         await send(.cat(.changeType(.onBall)))
                         await send(.cat(.changeAnimationInterval(.default)))
-                        await send(.onStopTimer)
+                        await send(.cancel(.moveCatOnCompleteTimer))
                         await send(.menu(.stopTimer))
                     }
                 }
@@ -201,18 +206,20 @@ struct ActorPanel {
                 return .none
                 
             case .menu(let action):
-                // menuのアクションが実行されたらメニューを非表示にする
-                toggleMenuHidden(to: true, state: &state)
-                
-                switch action {
-                case .onClickStartTimer(let time):
-                    return .send(.pomodoroTimer(.startTimer(time: time)))
+                return .run { send in
+                    switch action {
+                    case .onClickStartTimer(let time):
+                        await send(.pomodoroTimer(.startTimer(time: time)))
+                        
+                    case .onClickStopTimer:
+                        await send(.pomodoroTimer(.stopTimer))
+                        
+                    default:
+                        break
+                    }
                     
-                case .onClickStopTimer:
-                    return .send(.pomodoroTimer(.stopTimer))
-                    
-                default:
-                    return .none
+                    // menuのアクションが実行されたらメニューを非表示にする
+                    await send(.toggleMenuHidden(to: true))
                 }
             }
         }
