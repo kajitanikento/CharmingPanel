@@ -16,8 +16,9 @@ struct ActorPanel {
         var currentInputSource: InputSource = .abc
         var movingPanelPosition: MovePanelInfo?
 
-        var isPanelHidden: Bool = false
+        var isPanelHidden = false
         var isShowMenu = false
+        var shouldQuitApp = false
         
         var isLongPress = false
         var isHoverActor = false
@@ -39,7 +40,9 @@ struct ActorPanel {
         case startObserveHotKey
         case startMovePanelPosition(MovePanelInfo)
         case finishMovePanelPosition
+        case togglePanelHidden(to: Bool? = nil)
         case toggleMenuHidden(to: Bool? = nil)
+        case quitApp
         case handle(HotKey)
         case cancel(CancelID)
 
@@ -100,8 +103,16 @@ struct ActorPanel {
                     }
                 }
                 
+            case .togglePanelHidden(let isHide):
+                togglePanelHidden(to: isHide, state: &state)
+                return .none
+                
             case .toggleMenuHidden(let isHide):
                 toggleMenuHidden(to: isHide, state: &state)
+                return .none
+                
+            case .quitApp:
+                state.shouldQuitApp = true
                 return .none
                 
             case let .handle(hotKey):
@@ -214,6 +225,12 @@ struct ActorPanel {
                         
                     case .onClickStopTimer:
                         await send(.pomodoroTimer(.stopTimer))
+                        
+                    case .onClickHidePanel:
+                        await send(.togglePanelHidden(to: true))
+                        
+                    case .onClickQuitApp:
+                        await send(.quitApp)
                         
                     default:
                         break

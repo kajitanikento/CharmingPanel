@@ -21,6 +21,8 @@ struct ActorPanelMenu {
         // View inputs
         case onClickStartTimer(time: PomodoroTimer.PomodoroTime)
         case onClickStopTimer
+        case onClickHidePanel
+        case onClickQuitApp
         
         // Store inputs
         case stopTimer
@@ -37,6 +39,12 @@ struct ActorPanelMenu {
                 
             case .onClickStopTimer:
                 stopTimer(state: &state)
+                return .none
+                
+            case .onClickHidePanel:
+                return .none
+                
+            case .onClickQuitApp:
                 return .none
                 
             case .stopTimer:

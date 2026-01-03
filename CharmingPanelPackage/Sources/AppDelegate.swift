@@ -19,8 +19,12 @@ public final class AppDelegate: NSObject, NSApplicationDelegate {
 
     private var statusItem: NSStatusItem!
     private var toggleHiddenMenuItem: NSMenuItem!
+    private var showPanelImage: NSImage? { NSImage(systemSymbolName: "eye", accessibilityDescription: "Switch panel visibility") }
+    private var hidePanelImage: NSImage? { NSImage(systemSymbolName: "eye.slash", accessibilityDescription: "Switch panel visibility") }
     
     private var panelController: ActorPanelController!
+    
+    private var observations: [ObserveToken] = []
 
     public override init() {
         super.init()
@@ -29,6 +33,7 @@ public final class AppDelegate: NSObject, NSApplicationDelegate {
     public func applicationDidFinishLaunching(_ notification: Notification) {
         panelController = ActorPanelController(store: store)
         setupStatusItem()
+        observe()
     }
     
     private func setupStatusItem() {
@@ -44,19 +49,34 @@ public final class AppDelegate: NSObject, NSApplicationDelegate {
         
         let menu = NSMenu()
         toggleHiddenMenuItem = NSMenuItem(title: "", action: #selector(togglePanel), keyEquivalent: "u")
-        toggleHiddenMenuItem.image = NSImage(systemSymbolName: "eye", accessibilityDescription: "Switch panel visibility")
+        toggleHiddenMenuItem.image = hidePanelImage
         updateToggleHiddenMenuItemTitle()
         menu.addItem(toggleHiddenMenuItem)
         menu.addItem(NSMenuItem.separator())
-        let quitMenuItem = NSMenuItem(title: "Quit", action: #selector(quit), keyEquivalent: "q")
+        let quitMenuItem = NSMenuItem(title: "アプリを終了", action: #selector(quit), keyEquivalent: "q")
         quitMenuItem.image = NSImage(systemSymbolName: "xmark.circle.fill", accessibilityDescription: "Quit application")
         menu.addItem(quitMenuItem)
         
         statusItem.menu = menu
     }
     
+    private func observe() {
+        observations.append(observe { [unowned self] in
+            _ = store.isPanelHidden
+            updateToggleHiddenMenuItemTitle()
+        })
+        
+        observations.append(observe { [unowned self] in
+            _ = store.shouldQuitApp
+            if store.shouldQuitApp {
+                quit()
+            }
+        })
+    }
+    
     private func updateToggleHiddenMenuItemTitle() {
-        toggleHiddenMenuItem.title = "\(store.isPanelHidden ? "Show" : "Hide") panel"
+        toggleHiddenMenuItem.title = "パネルを\(store.isPanelHidden ? "表示" : "非表示")"
+        toggleHiddenMenuItem.image = store.isPanelHidden ? showPanelImage : hidePanelImage
     }
     
     @objc private func togglePanel() {

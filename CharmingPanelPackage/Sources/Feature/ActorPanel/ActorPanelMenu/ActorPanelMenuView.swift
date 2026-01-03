@@ -23,10 +23,9 @@ struct ActorPanelMenuView: View {
     }
     
     var content: some View {
-        VStack {
+        VStack(spacing: 8) {
             timerMenu
-            
-//            settingMenu
+            menuTile
             
             Spacer()
         }
@@ -139,14 +138,41 @@ struct ActorPanelMenuView: View {
         )
     }
     
-    // MARK: Other menu
+    // MARK: Menu tile
     
-    var settingMenu: some View {
-        VStack {
-            Text("hoge")
-            Text("fuga")
+    var menuTile: some View {
+        LazyVGrid(columns: Array(repeating: .init(), count: 4)) {
+            hidePanelTile
+            quitAppTile
         }
-        .padding()
+    }
+    
+    var hidePanelTile: some View {
+        menuTile(action: {
+            store.send(.onClickHidePanel)
+        }) {
+            Image(systemName: "eye.slash")
+                .resizable()
+                .scaledToFit()
+                .frame(width: 24)
+        }
+        .help("パネルを非表示")
+    }
+    
+    var quitAppTile: some View {
+        menuTile(
+            action: {
+                store.send(.onClickQuitApp)
+            },
+            foregroundColor: .white,
+            backgroundColor: .red
+        ) {
+            Image(systemName: "xmark")
+                .resizable()
+                .scaledToFit()
+                .frame(width: 16)
+        }
+        .help("アプリを終了")
     }
     
     // MARK: Common
@@ -167,6 +193,25 @@ struct ActorPanelMenuView: View {
         }
         .padding(.vertical, 16)
         .background(.white)
+        .clipShape(RoundedRectangle(cornerRadius: 20))
+    }
+    
+    func menuTile<Content: View>(
+        action: @escaping () -> Void,
+        foregroundColor: Color = .black,
+        backgroundColor: Color = .white,
+        @ViewBuilder content: @escaping () -> Content
+    ) -> some View {
+        Button(action: action) {
+            ZStack {
+                backgroundColor
+                
+                content()
+            }
+            .frame(width: 64, height: 64)
+            .foregroundStyle(foregroundColor)
+        }
+        .buttonStyle(.plain)
         .clipShape(RoundedRectangle(cornerRadius: 20))
     }
     
@@ -197,7 +242,7 @@ struct ActorPanelMenuView: View {
         
         ActorPanelMenuView(
             store: .init(initialState: ActorPanelMenu.State(
-                startedTimerTime: .init(startDate: .now, intervalMinute: 30)
+                timeIntervalMinuteHistory: [5, 10]
             )) {
                 ActorPanelMenu()
             }
