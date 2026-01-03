@@ -78,7 +78,7 @@ struct ActorPanel {
                 }
                 
             case .didResignActive:
-                state.isShowMenu = false
+                toggleMenuHidden(to: true, state: &state)
                 return .none
                 
             case .startObserveInputSource:
@@ -201,6 +201,8 @@ struct ActorPanel {
         }
     }
     
+    // MARK: Helpers
+    
     private func togglePanelHidden(to isHidden: Bool? = nil, state: inout State) {
         if let isHidden {
             state.isPanelHidden = isHidden
@@ -220,6 +222,19 @@ struct ActorPanel {
         } else {
             state.isShowMenu.toggle()
         }
+        updateCatType(state: &state)
+    }
+    
+    private func updateCatType(state: inout State) {
+        if state.isShowMenu {
+            state.cat.type = .think
+            return
+        }
+        if state.pomodoroTimer.isTimerRunning {
+            state.cat.type = .hasTimer
+            return
+        }
+        state.cat.type = .onBall
     }
 }
 

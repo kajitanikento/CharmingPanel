@@ -35,9 +35,13 @@ struct ActorPanelView: View {
     
     private var actorContent: some View {
         ZStack {
-            inputSourceLabel
+            if isShowInputSourceLabel {
+                inputSourceLabel
+            }
             cat
-            pomodoroTimer
+            if isShowTimerLabel {
+                pomodoroTimer
+            }
         }
         .onRightClick {
             store.send(.onRightClickActor)
@@ -94,7 +98,6 @@ struct ActorPanelView: View {
         .shadow(color: .black.opacity(0.2),radius: 4, x: 2, y: 2)
     }
     
-    @ViewBuilder
     private var inputSourceLabel: some View {
         VStack(spacing: 0) {
             Spacer(minLength: 0)
@@ -142,9 +145,23 @@ struct ActorPanelView: View {
         }
     }
     
-    var canMovePanel: Bool {
+    private var canMovePanel: Bool {
         if store.isShowMenu {
             return isHoverActor
+        }
+        return true
+    }
+    
+    private var isShowInputSourceLabel: Bool {
+        store.cat.type != .pickUp
+    }
+    
+    private var isShowTimerLabel: Bool {
+        if isLongPress {
+            return false
+        }
+        if store.cat.type == .think {
+            return false
         }
         return true
     }
