@@ -29,7 +29,18 @@ struct ActorPanelMenu {
 
         // Store inputs
         case stopTimer
-        case loadHistory
+        
+        var shouldHideMenu: Bool {
+            switch self {
+            case .onClickStartTimer,
+                    .onClickStopTimer,
+                    .onClickHidePanel,
+                    .onClickQuitApp:
+                true
+            default:
+                false
+            }
+        }
     }
 
     @Dependency(\.timerHistoryRepository) var timerHistoryRepository
@@ -38,10 +49,7 @@ struct ActorPanelMenu {
         Reduce { state, action in
             switch action {
             case .onAppear:
-                return .send(.loadHistory)
-
-            case .loadHistory:
-                state.timeIntervalMinuteHistory = timerHistoryRepository.load()
+                loadHistory(state: &state)
                 return .none
 
             case .onClickStartTimer(let time):
@@ -83,6 +91,10 @@ struct ActorPanelMenu {
     
     private func stopTimer(state: inout State) {
         state.startedTimerTime = nil
+    }
+    
+    private func loadHistory(state: inout State) {
+        state.timeIntervalMinuteHistory = timerHistoryRepository.load()
     }
 
     private func saveHistory(state: State) {

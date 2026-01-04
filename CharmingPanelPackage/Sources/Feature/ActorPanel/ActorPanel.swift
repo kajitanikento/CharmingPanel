@@ -237,8 +237,10 @@ struct ActorPanel {
                         break
                     }
                     
-                    // menuのアクションが実行されたらメニューを非表示にする
-                    await send(.toggleMenuHidden(to: true))
+                    if action.shouldHideMenu {
+                        // menuのアクションが実行されたらメニューを非表示にする
+                        await send(.toggleMenuHidden(to: true))
+                    }
                 }
             }
         }
