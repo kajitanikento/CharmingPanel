@@ -10,31 +10,44 @@ import SwiftUI
 
 @Reducer
 struct ActorPanelMenu {
-    
+
     @ObservableState
     struct State {
         var startedTimerTime: PomodoroTimer.PomodoroTime?
         var timeIntervalMinuteHistory: [Int] = []
     }
-    
+
     enum Action {
+        // Lifecycle
+        case onAppear
+
         // View inputs
         case onClickStartTimer(time: PomodoroTimer.PomodoroTime)
         case onClickStopTimer
         case onClickHidePanel
         case onClickQuitApp
-        
+
         // Store inputs
         case stopTimer
+        case loadHistory
     }
-    
-    
+
+    @Dependency(\.timerHistoryRepository) var timerHistoryRepository
+
     var body: some Reducer<State, Action> {
         Reduce { state, action in
             switch action {
+            case .onAppear:
+                return .send(.loadHistory)
+
+            case .loadHistory:
+                state.timeIntervalMinuteHistory = timerHistoryRepository.load()
+                return .none
+
             case .onClickStartTimer(let time):
                 state.startedTimerTime = time
                 updateTime(intervalMinute: time.intervalMinute, state: &state)
+                saveHistory(state: state)
                 return .none
                 
             case .onClickStopTimer:
@@ -70,5 +83,9 @@ struct ActorPanelMenu {
     
     private func stopTimer(state: inout State) {
         state.startedTimerTime = nil
+    }
+
+    private func saveHistory(state: State) {
+        timerHistoryRepository.save(state.timeIntervalMinuteHistory)
     }
 }
