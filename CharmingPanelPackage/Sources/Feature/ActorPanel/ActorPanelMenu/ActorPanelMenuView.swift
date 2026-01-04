@@ -182,9 +182,6 @@ struct ActorPanelMenuView: View {
     var tileColumnCount: Int { 4 }
     var tileSpacing: CGFloat { 8 }
     var tileWidth: CGFloat {
-        // 280 / 4 = 70
-        // 8 * 3 = 24
-        // 70 - 24 = 46
         menuMaxWidth / CGFloat(tileColumnCount) - tileSpacing * CGFloat(tileColumnCount - 1) / CGFloat(tileColumnCount)
     }
     func menuTile<Content: View>(
