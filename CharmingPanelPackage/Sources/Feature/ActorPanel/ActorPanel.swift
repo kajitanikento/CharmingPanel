@@ -78,6 +78,7 @@ struct ActorPanel {
                 return .run { send in
                     await send(.startObserveInputSource)
                     await send(.startObserveHotKey)
+                    await send(.menu(.onAppear))
                 }
                 
             case .onDisappear:
