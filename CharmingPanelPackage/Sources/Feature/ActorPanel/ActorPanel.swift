@@ -150,10 +150,14 @@ struct ActorPanel {
                 return .none
                 
             case .onLongPressActor(let isLongPress):
-                updateLongPress(to: isLongPress, state: &state)
-                
+                if #available(macOS 26.0, *) {
+                    updateLongPress(to: isLongPress, state: &state)
+                }
                 guard isLongPress else {
                     return .none
+                }
+                if #unavailable(macOS 26.0) {
+                    updateLongPress(to: true, state: &state)
                 }
                 
                 if state.pomodoroTimer.isComplete {
@@ -176,7 +180,7 @@ struct ActorPanel {
                 
             case .onEndWindowDrag:
                 if state.isLongPress {
-                    state.isLongPress = false
+                    updateLongPress(to: false, state: &state)
                 }
                 return .none
 
