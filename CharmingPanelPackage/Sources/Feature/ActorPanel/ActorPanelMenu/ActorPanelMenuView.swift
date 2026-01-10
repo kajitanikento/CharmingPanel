@@ -10,13 +10,6 @@ import ComposableArchitecture
 
 struct ActorPanelMenuView: View {
     @Bindable var store: StoreOf<ActorPanelMenu>
-    // アクションを実行した後にメニューが消える前に表示が切り替わらないように固定値のStateを保持している
-    var stateForDisplay: ActorPanelMenu.State
-    
-    init(store: StoreOf<ActorPanelMenu>) {
-        self.store = store
-        self.stateForDisplay = store.state
-    }
     
     var body: some View {
         content
@@ -40,7 +33,7 @@ struct ActorPanelMenuView: View {
             "タイマー",
             ignoreContentHorizontalPadding: true
         ) {
-            if let startedTimerTime = stateForDisplay.startedTimerTime {
+            if let startedTimerTime = store.startedTimerTime {
                 timerStopContent(startedTimerTime: startedTimerTime)
             } else {
                 timerStartContent
@@ -52,7 +45,7 @@ struct ActorPanelMenuView: View {
         VStack(alignment: .leading, spacing: 12) {
             timerPresets
             
-            if stateForDisplay.timeIntervalMinuteHistory.isNotEmpty {
+            if store.timeIntervalMinuteHistory.isNotEmpty {
                 timerHistory
             }
         }
@@ -77,11 +70,18 @@ struct ActorPanelMenuView: View {
             
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 12) {
-                    ForEach(stateForDisplay.timeIntervalMinuteHistory, id: \.self) { interval in
+                    ForEach(store.timeIntervalMinuteHistory, id: \.self) { interval in
                         timerStartButton(
                             intervalMinute: interval,
                             backgroundColor: .orange
                         )
+                        .contextMenu {
+                            Button(role: .destructive) {
+                                store.send(.onDeleteTimerHistory(intervalMinute: interval))
+                            } label: {
+                                Label("削除", systemImage: "trash")
+                            }
+                        }
                     }
                 }
                 .padding(.horizontal, 16)

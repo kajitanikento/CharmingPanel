@@ -26,21 +26,10 @@ struct ActorPanelMenu {
         case onClickStopTimer
         case onClickHidePanel
         case onClickQuitApp
+        case onDeleteTimerHistory(intervalMinute: Int)
 
         // Store inputs
         case stopTimer
-        
-        var shouldHideMenu: Bool {
-            switch self {
-            case .onClickStartTimer,
-                    .onClickStopTimer,
-                    .onClickHidePanel,
-                    .onClickQuitApp:
-                true
-            default:
-                false
-            }
-        }
     }
 
     @Dependency(\.timerHistoryRepository) var timerHistoryRepository
@@ -61,13 +50,18 @@ struct ActorPanelMenu {
             case .onClickStopTimer:
                 stopTimer(state: &state)
                 return .none
-                
+
             case .onClickHidePanel:
                 return .none
-                
+
             case .onClickQuitApp:
                 return .none
-                
+
+            case .onDeleteTimerHistory(let intervalMinute):
+                deleteTimerHistory(intervalMinute: intervalMinute, state: &state)
+                saveHistory(state: state)
+                return .none
+
             case .stopTimer:
                 stopTimer(state: &state)
                 return .none
@@ -92,7 +86,11 @@ struct ActorPanelMenu {
     private func stopTimer(state: inout State) {
         state.startedTimerTime = nil
     }
-    
+
+    private func deleteTimerHistory(intervalMinute: Int, state: inout State) {
+        state.timeIntervalMinuteHistory.removeAll { $0 == intervalMinute }
+    }
+
     private func loadHistory(state: inout State) {
         state.timeIntervalMinuteHistory = timerHistoryRepository.load()
     }
