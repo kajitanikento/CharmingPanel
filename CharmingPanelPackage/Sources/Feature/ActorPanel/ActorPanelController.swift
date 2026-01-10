@@ -96,7 +96,7 @@ final class ActorPanelController {
         actorPanel.isMovableByWindowBackground = false
         actorPanel.isReleasedWhenClosed = false
         actorPanel.hidesOnDeactivate = false
-        actorPanel.backgroundColor = .orange
+        actorPanel.backgroundColor = .clear
         actorPanel.hasShadow = false
         actorPanel.isOpaque = false
         

@@ -42,6 +42,7 @@ struct ActorPanel {
         case finishMovePanelPosition
         case togglePanelHidden(to: Bool? = nil)
         case toggleMenuHidden(to: Bool? = nil)
+        case updateCatType
         case quitApp
         case handle(HotKey)
         case cancel(CancelID)
@@ -110,6 +111,10 @@ struct ActorPanel {
                 
             case .toggleMenuHidden(let isHide):
                 toggleMenuHidden(to: isHide, state: &state)
+                return .none
+                
+            case .updateCatType:
+                updateCatType(state: &state)
                 return .none
                 
             case .quitApp:
@@ -211,8 +216,8 @@ struct ActorPanel {
                     }
                     .cancellable(id: CancelID.moveCatOnCompleteTimer)
                 case .stopTimer:
-                    updateCatType(state: &state)
                     return .run { send in
+                        await send(.updateCatType)
                         await send(.cat(.changeAnimationInterval(.default)))
                         await send(.cancel(.moveCatOnCompleteTimer))
                         await send(.menu(.stopTimer))
