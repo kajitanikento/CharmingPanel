@@ -30,18 +30,6 @@ struct ActorPanelMenu {
 
         // Store inputs
         case stopTimer
-
-        var shouldHideMenu: Bool {
-            switch self {
-            case .onClickStartTimer,
-                    .onClickStopTimer,
-                    .onClickHidePanel,
-                    .onClickQuitApp:
-                true
-            default:
-                false
-            }
-        }
     }
 
     @Dependency(\.timerHistoryRepository) var timerHistoryRepository

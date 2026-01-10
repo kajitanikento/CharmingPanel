@@ -191,12 +191,12 @@ struct ActorPanel {
             case let .pomodoroTimer(action):
                 switch action {
                 case .startTimer:
-                    return .send(.cat(.changeType(.hasTimer)))
+                    updateCatType(state: &state)
+                    return .none
                     
                 case .completeTimer:
                     return .run { send in
                         await send(.toggleMenuHidden(to: true))
-                        await send(.cat(.changeType(.completeTimer)))
                         await send(.cat(.changeAnimationInterval(.quick)))
                         
                         let limitDate = self.date.now.addingTimeInterval(30)
@@ -211,8 +211,8 @@ struct ActorPanel {
                     }
                     .cancellable(id: CancelID.moveCatOnCompleteTimer)
                 case .stopTimer:
+                    updateCatType(state: &state)
                     return .run { send in
-                        await send(.cat(.changeType(.onBall)))
                         await send(.cat(.changeAnimationInterval(.default)))
                         await send(.cancel(.moveCatOnCompleteTimer))
                         await send(.menu(.stopTimer))
@@ -319,5 +319,17 @@ extension ActorPanel {
         var animationDuration: Double = 2
         
         static let zero: Self = .init(position: .zero, animationDuration: .zero)
+    }
+}
+
+extension ActorPanelMenu.Action {
+    var shouldHideMenu: Bool {
+        switch self {
+        case .onClickHidePanel,
+                .onClickQuitApp:
+            true
+        default:
+            false
+        }
     }
 }
